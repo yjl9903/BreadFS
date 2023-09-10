@@ -1,15 +1,15 @@
 {
-  "name": "@asyncfs/node",
+  "name": "@breadfs/node",
   "version": "0.0.1",
   "description": "",
   "keywords": [],
-  "homepage": "https://github.com/yjl9903/asyncfs#readme",
+  "homepage": "https://github.com/yjl9903/breadfs#readme",
   "bugs": {
-    "url": "https://github.com/yjl9903/asyncfs/issues"
+    "url": "https://github.com/yjl9903/breadfs/issues"
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/yjl9903/asyncfs.git"
+    "url": "git+https://github.com/yjl9903/breadfs.git"
   },
   "license": "MIT",
   "author": "XLor",
@@ -35,7 +35,7 @@
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
-    "@asyncfs/core": "workspace:*"
+    "@breadfs/core": "workspace:*"
   },
   "devDependencies": {
     "vitest": "^0.34.4"

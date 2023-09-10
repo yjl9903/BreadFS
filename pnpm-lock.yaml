@@ -32,11 +32,11 @@ importers:
 
   packages/asyncfs:
     dependencies:
-      '@asyncfs/core':
+      '@breadfs/core':
         specifier: workspace:*
         version: link:../core
     optionalDependencies:
-      '@asyncfs/node':
+      '@breadfs/node':
         specifier: workspace:*
         version: link:../node
     devDependencies:
@@ -52,7 +52,7 @@ importers:
 
   packages/node:
     dependencies:
-      '@asyncfs/core':
+      '@breadfs/core':
         specifier: workspace:*
         version: link:../core
     devDependencies:
@@ -62,7 +62,7 @@ importers:
 
   packages/webdav:
     dependencies:
-      '@asyncfs/core':
+      '@breadfs/core':
         specifier: workspace:*
         version: link:../core
       webdav:

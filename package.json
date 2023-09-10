@@ -1,5 +1,5 @@
 {
-  "name": "@asyncfs/monorepo",
+  "name": "@breadfs/monorepo",
   "version": "0.0.1",
   "private": true,
   "scripts": {
