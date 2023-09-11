@@ -4,8 +4,7 @@ import { Path } from '@breadfs/core';
 
 // @ts-ignore
 Path.prototype[inspect.custom] = function () {
-  // @ts-ignore
-  return this.path;
+  return this.toString();
 };
 
 export { BreadFS } from '@breadfs/core';

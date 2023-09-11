@@ -1,61 +1,105 @@
 import pathe from 'pathe';
-import { ReadableStream } from 'stream/web';
+import { ReadableStream, WritableStream } from 'node:stream/web';
 
 export abstract class BreadFSProvider {
-  abstract create(path: string): Promise<void>;
+  abstract mkdir(path: string): Promise<string>;
 
-  abstract read(path: string): ReadableStream;
+  abstract createReadStream(path: string): ReadableStream;
 
-  abstract write(path: string, stream: ReadableStream): Promise<void>;
+  abstract createWriteStream(path: string): WritableStream;
 
-  abstract delete(path: string): Promise<void>;
+  abstract readFile(path: string): ReadableStream;
+
+  abstract writeFile(path: string, stream: ReadableStream): Promise<void>;
+
+  abstract remove(path: string): Promise<void>;
 
   abstract stat(path: string): Promise<{}>;
 
-  abstract list(path: string): Promise<[]>;
+  abstract list(path: string): Promise<string>;
 
   abstract walk(path: string): AsyncIterable<{}>;
 }
 
 export class BreadFS {
-  public constructor() {}
+  public readonly provider: BreadFSProvider;
 
-  public static of() {
-    return new BreadFS();
+  public constructor(provider: BreadFSProvider) {
+    this.provider = provider;
+  }
+
+  public static of(provider: BreadFSProvider) {
+    return new BreadFS(provider);
   }
 
   public path(path: string): Path {
     return new Path(this, path);
   }
+
+  public async mkdir(path: string): Promise<Path> {
+    return this.path(await this.provider.mkdir(path));
+  }
+
+  public createReadStream(path: string): ReadableStream {
+    return this.provider.createReadStream(path);
+  }
+
+  public createWriteStream(path: string): WritableStream {
+    return this.provider.createWriteStream(path);
+  }
+
+  public readFile(path: string): ReadableStream {
+    return this.provider.readFile(path);
+  }
+
+  public writeFile(path: string, stream: ReadableStream): Promise<void> {
+    return this.provider.writeFile(path, stream);
+  }
+
+  public remove(path: string): Promise<void> {
+    return this.provider.remove(path);
+  }
+
+  public stat(path: string): Promise<{}> {
+    return this.provider.stat(path);
+  }
 }
 
 export class Path {
-  private readonly fs: BreadFS;
+  private readonly _fs: BreadFS;
 
-  private readonly path: string;
+  private readonly _path: string;
 
   public constructor(fs: BreadFS, path: string) {
-    this.fs = fs;
-    this.path = path;
+    this._fs = fs;
+    this._path = path;
+  }
+
+  public get fs() {
+    return this._fs;
+  }
+
+  public get path() {
+    return this._path;
   }
 
   public get basename() {
-    return pathe.basename(this.path);
+    return pathe.basename(this._path);
   }
 
   public get dirname() {
-    return pathe.dirname(this.path);
+    return pathe.dirname(this._path);
   }
 
   public join(...pieces: string[]) {
-    return new Path(this.fs, pathe.join(this.path, ...pieces));
+    return new Path(this._fs, pathe.join(this._path, ...pieces));
   }
 
   public resolve(...pieces: string[]) {
-    return new Path(this.fs, pathe.resolve(this.path, ...pieces));
+    return new Path(this._fs, pathe.resolve(this._path, ...pieces));
   }
 
   public toString() {
-    return this.path;
+    return this._path;
   }
 }
