@@ -39,5 +39,8 @@
   },
   "engines": {
     "node": ">=v20.1.0"
+  },
+  "dependencies": {
+    "pathe": "^1.1.1"
   }
 }

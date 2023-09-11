@@ -3,14 +3,32 @@
   "compilerOptions": {
     "target": "ESNext",
     "module": "ESNext",
-    "lib": ["ESNext"],
+    "lib": [
+      "ESNext"
+    ],
     "moduleResolution": "Node",
     "esModuleInterop": true,
     "strict": true,
     "strictNullChecks": true,
     "resolveJsonModule": true,
     "skipLibCheck": true,
-    "skipDefaultLibCheck": true
+    "skipDefaultLibCheck": true,
+    "paths": {
+      "breadfs": [
+        "./packages/breadfs/src/index.ts"
+      ],
+      "@breadfs/core": [
+        "./packages/core/src/index.ts"
+      ],
+      "@breadfs/node": [
+        "./packages/node/src/index.ts"
+      ],
+      "@breadfs/webdav": [
+        "./packages/webdav/src/index.ts"
+      ]
+    }
   },
-  "exclude": ["node_modules"]
+  "exclude": [
+    "node_modules"
+  ]
 }
