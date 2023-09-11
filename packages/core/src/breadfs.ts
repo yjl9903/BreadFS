@@ -1,4 +1,21 @@
 import pathe from 'pathe';
+import { ReadableStream } from 'stream/web';
+
+export abstract class BreadFSProvider {
+  abstract create(path: string): Promise<void>;
+
+  abstract read(path: string): ReadableStream;
+
+  abstract write(path: string, stream: ReadableStream): Promise<void>;
+
+  abstract delete(path: string): Promise<void>;
+
+  abstract stat(path: string): Promise<{}>;
+
+  abstract list(path: string): Promise<[]>;
+
+  abstract walk(path: string): AsyncIterable<{}>;
+}
 
 export class BreadFS {
   public constructor() {}
