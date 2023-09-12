@@ -19,11 +19,29 @@
       "require": "./dist/index.cjs",
       "import": "./dist/index.mjs",
       "types": "./dist/index.d.ts"
+    },
+    "./node": {
+      "require": "./dist/node.cjs",
+      "import": "./dist/node.mjs",
+      "types": "./dist/node.d.ts"
+    },
+    "./webdav": {
+      "require": "./dist/webdav.cjs",
+      "import": "./dist/webdav.mjs",
+      "types": "./dist/webdav.d.ts"
     }
   },
   "main": "dist/index.cjs",
   "module": "dist/index.mjs",
   "types": "dist/index.d.ts",
+  "typesVersions": {
+    "*": {
+      "*": [
+        "./dist/*",
+        "./*"
+      ]
+    }
+  },
   "files": [
     "dist"
   ],
@@ -41,7 +59,8 @@
     "vitest": "^0.34.4"
   },
   "optionalDependencies": {
-    "@breadfs/node": "workspace:*"
+    "@breadfs/node": "workspace:*",
+    "@breadfs/webdav": "workspace:*"
   },
   "engines": {
     "node": ">=v20.1.0"

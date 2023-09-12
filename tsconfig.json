@@ -17,6 +17,9 @@
       "breadfs": [
         "./packages/breadfs/src/index.ts"
       ],
+      "breadfs/node": [
+        "./packages/breadfs/src/node.ts"
+      ],
       "@breadfs/core": [
         "./packages/core/src/index.ts"
       ],
