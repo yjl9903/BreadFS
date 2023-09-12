@@ -39,6 +39,9 @@ importers:
       '@breadfs/node':
         specifier: workspace:*
         version: link:../node
+      '@breadfs/webdav':
+        specifier: workspace:*
+        version: link:../webdav
     devDependencies:
       vitest:
         specifier: ^0.34.4
