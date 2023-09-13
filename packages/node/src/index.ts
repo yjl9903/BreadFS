@@ -1,4 +1,6 @@
 import { inspect } from 'node:util';
+import { Readable, Writable } from 'node:stream';
+import { promises as fs, createReadStream, createWriteStream } from 'node:fs';
 
 import { Path, BreadFSProvider } from '@breadfs/core';
 import { ReadableStream, WritableStream } from 'stream/web';
@@ -9,16 +11,18 @@ Path.prototype[inspect.custom] = function () {
 };
 
 export class NodeFSProvider extends BreadFSProvider {
-  public mkdir(path: string): Promise<string> {
-    throw new Error('Method not implemented.');
+  public async mkdir(path: string): Promise<void> {
+    await fs.mkdir(path);
   }
 
   public createReadStream(path: string): ReadableStream<any> {
-    throw new Error('Method not implemented.');
+    const stream = createReadStream(path);
+    return Readable.toWeb(stream);
   }
 
   public createWriteStream(path: string): WritableStream<any> {
-    throw new Error('Method not implemented.');
+    const stream = createWriteStream(path);
+    return Writable.toWeb(stream);
   }
 
   public readFile(path: string): ReadableStream<any> {

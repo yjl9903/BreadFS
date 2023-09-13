@@ -1,25 +1,7 @@
 import pathe from 'pathe';
 import { ReadableStream, WritableStream } from 'node:stream/web';
 
-export abstract class BreadFSProvider {
-  abstract mkdir(path: string): Promise<string>;
-
-  abstract createReadStream(path: string): ReadableStream;
-
-  abstract createWriteStream(path: string): WritableStream;
-
-  abstract readFile(path: string): ReadableStream;
-
-  abstract writeFile(path: string, stream: ReadableStream): Promise<void>;
-
-  abstract remove(path: string): Promise<void>;
-
-  abstract stat(path: string): Promise<{}>;
-
-  abstract list(path: string): Promise<string>;
-
-  abstract walk(path: string): AsyncIterable<{}>;
-}
+import { BreadFSProvider } from './provider';
 
 export class BreadFS {
   public readonly provider: BreadFSProvider;
@@ -36,15 +18,37 @@ export class BreadFS {
     return new Path(this, path);
   }
 
-  public async mkdir(path: string): Promise<Path> {
-    return this.path(await this.provider.mkdir(path));
+  private matchFS<T extends {}>(
+    path: string | Path,
+    match: (path: string) => T,
+    miss: (path: Path) => T
+  ) {
+    if (typeof path === 'string') {
+      return match(path);
+    } else if (path.fs === this) {
+      return match(path.path);
+    } else {
+      return miss(path);
+    }
   }
 
-  public createReadStream(path: string): ReadableStream {
-    return this.provider.createReadStream(path);
+  public async mkdir(path: string | Path): Promise<Path> {
+    return this.matchFS(
+      path,
+      async (p) => (await this.provider.mkdir(p), this.path(p)),
+      async (p) => p.fs.mkdir(p)
+    );
   }
 
-  public createWriteStream(path: string): WritableStream {
+  public createReadStream(path: string | Path): ReadableStream<any> {
+    return this.matchFS(
+      path,
+      (p) => this.provider.createReadStream(p),
+      (p) => p.fs.createReadStream(p)
+    );
+  }
+
+  public createWriteStream(path: string): WritableStream<any> {
     return this.provider.createWriteStream(path);
   }
 
