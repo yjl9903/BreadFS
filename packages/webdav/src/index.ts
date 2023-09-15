@@ -1,10 +1,18 @@
 import type { ReadableStream, WritableStream } from 'node:stream/web';
 
+import { WebDAVClient, WebDAVClientOptions, createClient } from 'webdav';
+
 import { BreadFSProvider, FileStat } from '@breadfs/core';
 
 export class WebDAVFSProvider implements BreadFSProvider {
-  public mkdir(path: string): Promise<void> {
-    throw new Error('Method not implemented.');
+  private client: WebDAVClient;
+
+  public constructor(remoteURL: string, options: WebDAVClientOptions = {}) {
+    this.client = createClient(remoteURL, options);
+  }
+
+  public async mkdir(path: string): Promise<void> {
+    await this.client.createDirectory(path);
   }
 
   public createReadStream(path: string): ReadableStream<any> {
