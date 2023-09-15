@@ -1,7 +1,8 @@
-import pathe from 'pathe';
-import { ReadableStream, WritableStream } from 'node:stream/web';
+import type { ReadableStream, WritableStream } from 'node:stream/web';
 
-import { BreadFSProvider } from './provider';
+import pathe from 'pathe';
+
+import { BreadFSProvider, FileStat } from './provider';
 
 export class BreadFS {
   public readonly provider: BreadFSProvider;
@@ -56,24 +57,44 @@ export class BreadFS {
     );
   }
 
-  public readFile(path: string): ReadableStream {
-    return this.provider.readFile(path);
+  public readFile(path: string | Path): ReadableStream {
+    return this.matchFS(
+      path,
+      (p) => this.provider.readFile(p),
+      (p) => p.fs.readFile(p)
+    );
   }
 
-  public async writeFile(path: string, stream: ReadableStream): Promise<void> {
-    return this.provider.writeFile(path, stream);
+  public async writeFile(path: string | Path, stream: ReadableStream): Promise<void> {
+    return this.matchFS(
+      path,
+      (p) => this.provider.writeFile(p, stream),
+      (p) => p.fs.writeFile(p, stream)
+    );
   }
 
-  public async remove(path: string): Promise<void> {
-    return this.provider.remove(path);
+  public async remove(path: string | Path): Promise<void> {
+    return this.matchFS(
+      path,
+      (p) => this.provider.remove(p),
+      (p) => p.fs.remove(p)
+    );
   }
 
-  public async stat(path: string): Promise<{}> {
-    return this.provider.stat(path);
+  public async stat(path: string | Path): Promise<FileStat> {
+    return this.matchFS(
+      path,
+      (p) => this.provider.stat(p),
+      (p) => p.fs.stat(p)
+    );
   }
 
-  public async list(path: string): Promise<Path[]> {
-    return (await this.provider.list(path)).map((p) => this.path(p));
+  public async list(path: string | Path): Promise<Path[]> {
+    return this.matchFS(
+      path,
+      async (p) => (await this.provider.list(p)).map((p) => this.path(p)),
+      (p) => p.fs.list(p)
+    );
   }
 }
 
@@ -95,22 +116,55 @@ export class Path {
     return this._path;
   }
 
-  public get basename() {
+  // Path related
+  public get basename(): string {
     return pathe.basename(this._path);
   }
 
-  public get dirname() {
+  public get dirname(): string {
     return pathe.dirname(this._path);
   }
 
-  public join(...pieces: string[]) {
+  public join(...pieces: string[]): Path {
     return new Path(this._fs, pathe.join(this._path, ...pieces));
   }
 
-  public resolve(...pieces: string[]) {
+  public resolve(...pieces: string[]): Path {
     return new Path(this._fs, pathe.resolve(this._path, ...pieces));
   }
 
+  // File system access related
+  public async stat(): Promise<FileStat> {
+    return this._fs.stat(this._path);
+  }
+
+  public async isDirectory(): Promise<boolean> {
+    return (await this.stat()).isDirectory;
+  }
+
+  public async isFile(): Promise<boolean> {
+    return (await this.stat()).isDirectory;
+  }
+
+  public async exists(): Promise<boolean> {
+    return true;
+  }
+
+  public readFile() {
+    return this._fs.readFile(this._path);
+  }
+
+  public readText() {}
+
+  public writeFile(stream: ReadableStream) {
+    return this._fs.writeFile(this._path, stream);
+  }
+
+  public writeText() {}
+
+  public copyTo(dst: string | Path) {}
+
+  // Utils
   public toString() {
     return this._path;
   }

@@ -1,4 +1,4 @@
-import { ReadableStream, WritableStream } from 'node:stream/web';
+import type { ReadableStream, WritableStream } from 'node:stream/web';
 
 export interface BreadFSProvider {
   mkdir: (path: string, options?: MakeDirectoryOptions) => Promise<void>;
@@ -9,17 +9,23 @@ export interface BreadFSProvider {
 
   readFile: (path: string) => ReadableStream;
 
+  readText?: (path: string) => string;
+
   writeFile: (path: string, stream: ReadableStream) => Promise<void>;
+
+  writeText?: (path: string) => Promise<void>;
 
   copyFile?: (src: string, dst: string) => Promise<void>;
 
   remove: (path: string) => Promise<void>;
 
-  stat: (path: string) => Promise<{}>;
+  stat: (path: string) => Promise<FileStat>;
+
+  exists: (path: string) => Promise<boolean>;
 
   list: (path: string) => Promise<string[]>;
 
-  walk: (path: string) => AsyncIterable<{}>;
+  walk?: (path: string) => AsyncIterable<string>;
 }
 
 export interface MakeDirectoryOptions {
@@ -29,9 +35,22 @@ export interface MakeDirectoryOptions {
    * @default false
    */
   recursive?: boolean | undefined;
+
   /**
    * A file mode. If a string is passed, it is parsed as an octal integer. If not specified
    * @default 0o777
    */
   mode?: number | string | undefined;
+}
+
+export interface FileStat {
+  size: number | bigint | undefined;
+
+  isDirectory: boolean;
+
+  isFile: boolean;
+
+  mtime: Date | undefined;
+
+  birthtime: Date | undefined;
 }

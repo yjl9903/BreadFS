@@ -1,9 +1,10 @@
+import type { ReadableStream, WritableStream } from 'node:stream/web';
+
 import { inspect } from 'node:util';
 import { Readable, Writable } from 'node:stream';
 import { promises as fs, createReadStream, createWriteStream } from 'node:fs';
 
-import { Path, BreadFSProvider } from '@breadfs/core';
-import { ReadableStream, WritableStream } from 'stream/web';
+import { Path, BreadFSProvider, FileStat } from '@breadfs/core';
 
 // @ts-ignore
 Path.prototype[inspect.custom] = function () {
@@ -37,15 +38,20 @@ export class NodeFSProvider implements BreadFSProvider {
     throw new Error('Method not implemented.');
   }
 
-  public stat(path: string): Promise<{}> {
+  public stat(path: string): Promise<FileStat> {
     throw new Error('Method not implemented.');
+  }
+
+  public async exists(path: string): Promise<boolean> {
+    try {
+      await fs.access(path);
+      return true;
+    } catch {
+      return false;
+    }
   }
 
   public list(path: string): Promise<string[]> {
-    throw new Error('Method not implemented.');
-  }
-
-  public walk(path: string): AsyncIterable<{}> {
     throw new Error('Method not implemented.');
   }
 }

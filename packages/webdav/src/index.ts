@@ -1,5 +1,6 @@
-import { BreadFSProvider } from '@breadfs/core';
-import { ReadableStream, WritableStream } from 'stream/web';
+import type { ReadableStream, WritableStream } from 'node:stream/web';
+
+import { BreadFSProvider, FileStat } from '@breadfs/core';
 
 export class WebDAVFSProvider implements BreadFSProvider {
   public mkdir(path: string): Promise<void> {
@@ -26,15 +27,15 @@ export class WebDAVFSProvider implements BreadFSProvider {
     throw new Error('Method not implemented.');
   }
 
-  public stat(path: string): Promise<{}> {
+  public stat(path: string): Promise<FileStat> {
+    throw new Error('Method not implemented.');
+  }
+
+  public exists(path: string): Promise<boolean> {
     throw new Error('Method not implemented.');
   }
 
   public list(path: string): Promise<string[]> {
-    throw new Error('Method not implemented.');
-  }
-
-  public walk(path: string): AsyncIterable<{}> {
     throw new Error('Method not implemented.');
   }
 }
