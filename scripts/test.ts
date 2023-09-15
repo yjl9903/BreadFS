@@ -1,5 +1,4 @@
-import { NodeFS } from 'breadfs/node';
-import { BreadFS } from 'breadfs';
+import { BreadFS, NodeFS } from 'breadfs/node';
 
 const fs = BreadFS.of(NodeFS);
 const abc = fs.path('abc');
