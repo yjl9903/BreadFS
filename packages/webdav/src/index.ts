@@ -30,7 +30,7 @@ export class WebDAVFSProvider implements BreadFSProvider {
     throw new Error('Method not implemented.');
   }
 
-  public list(path: string): Promise<string> {
+  public list(path: string): Promise<string[]> {
     throw new Error('Method not implemented.');
   }
 

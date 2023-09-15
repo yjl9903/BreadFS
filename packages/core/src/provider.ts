@@ -17,7 +17,7 @@ export interface BreadFSProvider {
 
   stat: (path: string) => Promise<{}>;
 
-  list: (path: string) => Promise<string>;
+  list: (path: string) => Promise<string[]>;
 
   walk: (path: string) => AsyncIterable<{}>;
 }

@@ -32,14 +32,6 @@ export class BreadFS {
     }
   }
 
-  public async mkdir(path: string | Path): Promise<Path> {
-    return this.matchFS(
-      path,
-      async (p) => (await this.provider.mkdir(p), this.path(p)),
-      async (p) => p.fs.mkdir(p)
-    );
-  }
-
   public createReadStream(path: string | Path): ReadableStream<any> {
     return this.matchFS(
       path,
@@ -48,24 +40,40 @@ export class BreadFS {
     );
   }
 
-  public createWriteStream(path: string): WritableStream<any> {
-    return this.provider.createWriteStream(path);
+  public createWriteStream(path: string | Path): WritableStream<any> {
+    return this.matchFS(
+      path,
+      (p) => this.provider.createWriteStream(p),
+      (p) => p.fs.createWriteStream(p)
+    );
+  }
+
+  public async mkdir(path: string | Path): Promise<Path> {
+    return this.matchFS(
+      path,
+      async (p) => (await this.provider.mkdir(p), this.path(p)),
+      async (p) => p.fs.mkdir(p)
+    );
   }
 
   public readFile(path: string): ReadableStream {
     return this.provider.readFile(path);
   }
 
-  public writeFile(path: string, stream: ReadableStream): Promise<void> {
+  public async writeFile(path: string, stream: ReadableStream): Promise<void> {
     return this.provider.writeFile(path, stream);
   }
 
-  public remove(path: string): Promise<void> {
+  public async remove(path: string): Promise<void> {
     return this.provider.remove(path);
   }
 
-  public stat(path: string): Promise<{}> {
+  public async stat(path: string): Promise<{}> {
     return this.provider.stat(path);
+  }
+
+  public async list(path: string): Promise<Path[]> {
+    return (await this.provider.list(path)).map((p) => this.path(p));
   }
 }
 
