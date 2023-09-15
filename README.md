@@ -2,6 +2,25 @@
 
 [![CI](https://github.com/yjl9903/breadfs/actions/workflows/ci.yml/badge.svg)](https://github.com/yjl9903/breadfs/actions/workflows/ci.yml)
 
+Unified File System abstraction.
+
+## Installation
+
+```bash
+npm i breadfs
+```
+
+## Usage
+
+```ts
+import { NodeFS } from 'breadfs/node';
+import { BreadFS } from 'breadfs';
+
+const nfs = BreadFS.of(NodeFS);
+
+const bin = nfs.path('/bin');
+```
+
 ## License
 
 MIT License © 2023 [XLor](https://github.com/yjl9903)
