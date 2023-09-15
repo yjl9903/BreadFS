@@ -4,7 +4,7 @@ import { WebDAVClient, WebDAVClientOptions, createClient } from 'webdav';
 
 import { BreadFSProvider, FileStat } from '@breadfs/core';
 
-export class WebDAVFSProvider implements BreadFSProvider {
+export class WebDAVProvider implements BreadFSProvider {
   private client: WebDAVClient;
 
   public constructor(remoteURL: string, options: WebDAVClientOptions = {}) {
