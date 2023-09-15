@@ -1,23 +1,25 @@
 import { ReadableStream, WritableStream } from 'node:stream/web';
 
-export abstract class BreadFSProvider {
-  abstract mkdir(path: string, options?: MakeDirectoryOptions): Promise<void>;
+export interface BreadFSProvider {
+  mkdir: (path: string, options?: MakeDirectoryOptions) => Promise<void>;
 
-  abstract createReadStream(path: string): ReadableStream<any>;
+  createReadStream: (path: string) => ReadableStream<any>;
 
-  abstract createWriteStream(path: string): WritableStream<any>;
+  createWriteStream: (path: string) => WritableStream<any>;
 
-  abstract readFile(path: string): ReadableStream;
+  readFile: (path: string) => ReadableStream;
 
-  abstract writeFile(path: string, stream: ReadableStream): Promise<void>;
+  writeFile: (path: string, stream: ReadableStream) => Promise<void>;
 
-  abstract remove(path: string): Promise<void>;
+  copyFile?: (src: string, dst: string) => Promise<void>;
 
-  abstract stat(path: string): Promise<{}>;
+  remove: (path: string) => Promise<void>;
 
-  abstract list(path: string): Promise<string>;
+  stat: (path: string) => Promise<{}>;
 
-  abstract walk(path: string): AsyncIterable<{}>;
+  list: (path: string) => Promise<string>;
+
+  walk: (path: string) => AsyncIterable<{}>;
 }
 
 export interface MakeDirectoryOptions {

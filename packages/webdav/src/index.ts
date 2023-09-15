@@ -1,7 +1,7 @@
 import { BreadFSProvider } from '@breadfs/core';
 import { ReadableStream, WritableStream } from 'stream/web';
 
-export class WebDAVFSProvider extends BreadFSProvider {
+export class WebDAVFSProvider implements BreadFSProvider {
   public mkdir(path: string): Promise<void> {
     throw new Error('Method not implemented.');
   }

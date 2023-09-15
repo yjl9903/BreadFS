@@ -10,7 +10,7 @@ Path.prototype[inspect.custom] = function () {
   return this.toString();
 };
 
-export class NodeFSProvider extends BreadFSProvider {
+export class NodeFSProvider implements BreadFSProvider {
   public async mkdir(path: string): Promise<void> {
     await fs.mkdir(path);
   }
