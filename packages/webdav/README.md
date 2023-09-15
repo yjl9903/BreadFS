@@ -1,5 +1,8 @@
 # @breadfs/webdav
 
+[![version](https://img.shields.io/npm/v/@breadfs/webdav?label=@breadfs/webdav)](https://www.npmjs.com/package/@breadfs/webdav)
+[![CI](https://github.com/yjl9903/breadfs/actions/workflows/ci.yml/badge.svg)](https://github.com/yjl9903/breadfs/actions/workflows/ci.yml)
+
 ## Installation
 
 ```bash
