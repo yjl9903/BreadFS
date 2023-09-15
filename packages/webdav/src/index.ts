@@ -4,11 +4,17 @@ import { WebDAVClient, WebDAVClientOptions, createClient } from 'webdav';
 
 import { BreadFSProvider, FileStat } from '@breadfs/core';
 
+export { AuthType, Headers, OAuthToken } from 'webdav';
+
 export class WebDAVProvider implements BreadFSProvider {
   private client: WebDAVClient;
 
   public constructor(remoteURL: string, options: WebDAVClientOptions = {}) {
     this.client = createClient(remoteURL, options);
+  }
+
+  public static of(remoteURL: string, options: WebDAVClientOptions = {}) {
+    return new WebDAVProvider(remoteURL, options);
   }
 
   public async mkdir(path: string): Promise<void> {
