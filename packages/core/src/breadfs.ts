@@ -2,6 +2,7 @@ import type { ReadableStream, WritableStream } from 'node:stream/web';
 
 import pathe from 'pathe';
 
+import { BreadFSError } from './error';
 import { BreadFSProvider, FileStat } from './provider';
 
 export class BreadFS {
@@ -24,12 +25,16 @@ export class BreadFS {
     match: (path: string) => T,
     miss: (path: Path) => T
   ) {
-    if (typeof path === 'string') {
-      return match(path);
-    } else if (path.fs === this) {
-      return match(path.path);
-    } else {
-      return miss(path);
+    try {
+      if (typeof path === 'string') {
+        return match(path);
+      } else if (path.fs === this) {
+        return match(path.path);
+      } else {
+        return miss(path);
+      }
+    } catch (error) {
+      throw new BreadFSError(error);
     }
   }
 
