@@ -22,7 +22,7 @@ export interface BreadFSProvider {
 
   createWriteStream: (path: string, options: WriteStreamOptions) => WritableStream<Uint8Array>;
 
-  readFile: (path: string, options: ReadFileOptions) => Promise<Buffer>;
+  readFile: (path: string, options: ReadFileOptions) => Promise<Uint8Array>;
 
   readText?: (path: string, options: EncodingOptions) => Promise<string>;
 

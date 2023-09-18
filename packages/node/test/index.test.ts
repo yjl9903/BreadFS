@@ -1,4 +1,4 @@
-import { describe, it, expect } from 'vitest';
+import { describe, it, expect, beforeAll, afterAll } from 'vitest';
 
 import { BreadFS } from '@breadfs/core';
 
@@ -13,6 +13,16 @@ describe('NodeFS', () => {
 
 describe('File System', () => {
   const fs = BreadFS.of(NodeFS);
+
+  const temp = fs.path('.temp/');
+
+  beforeAll(async () => {
+    await temp.mkdir();
+  });
+
+  afterAll(async () => {
+    await temp.remove();
+  });
 
   it('should mkdir', async () => {
     const tempdir = fs.path('.temp/dir');
@@ -39,5 +49,16 @@ describe('File System', () => {
     expect(await fs.path('src').isDirectory()).toBeTruthy();
     expect(await fs.path('package.json').isFile()).toBeTruthy();
     expect(await fs.path('package.json').isDirectory()).toBeFalsy();
+  });
+
+  it('should read text', async () => {
+    expect(JSON.parse(await fs.path('package.json').readText()).name).toBe('@breadfs/node');
+  });
+
+  it('should write text', async () => {
+    const txt = fs.path('.temp/test.txt');
+    await txt.writeText('hello');
+    expect(await txt.readText()).toBe('hello');
+    await txt.remove();
   });
 });

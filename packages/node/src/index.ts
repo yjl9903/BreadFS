@@ -23,9 +23,7 @@ export class NodeProvider implements BreadFSProvider {
 
   public createReadStream(path: string) {
     const stream = createReadStream(path);
-    return Readable.toWeb(stream) as ReadableStream<Uint8Array> & {
-      [Symbol.asyncIterator](): AsyncIterator<Uint8Array>;
-    };
+    return Readable.toWeb(stream) as ReadableStream<Uint8Array>;
   }
 
   public createWriteStream(path: string) {
@@ -71,8 +69,8 @@ export class NodeProvider implements BreadFSProvider {
 
     return {
       size: stat.size,
-      isDirectory: stat.isDirectory(),
       isFile: stat.isFile(),
+      isDirectory: stat.isDirectory(),
       mtime: stat.mtime,
       birthtime: stat.birthtime
     };

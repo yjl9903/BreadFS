@@ -10,7 +10,8 @@ import {
   ReadStreamOptions,
   WriteStreamOptions,
   ReadFileOptions,
-  WriteFileOptions
+  WriteFileOptions,
+  EncodingOptions
 } from './provider';
 import { BreadFSError } from './error';
 
@@ -66,7 +67,7 @@ export class BreadFS {
     );
   }
 
-  public async readFile(path: string | Path, options: ReadFileOptions = {}): Promise<Buffer> {
+  public async readFile(path: string | Path, options: ReadFileOptions = {}): Promise<Uint8Array> {
     return this.runAsync(() =>
       this.matchFS(
         path,
@@ -76,9 +77,31 @@ export class BreadFS {
     );
   }
 
+  public async readText(
+    path: string | Path,
+    options: BufferEncoding | EncodingOptions = 'utf-8'
+  ): Promise<string> {
+    return this.runAsync(async () => {
+      if (this.provider.readText) {
+        const resolved: EncodingOptions =
+          typeof options === 'string' ? { encoding: options } : options;
+        return this.matchFS(
+          path,
+          (p) => this.provider.readText!(p, resolved),
+          (p) => p.fs.readText!(p, resolved)
+        );
+      } else {
+        const content = await this.readFile(path, options);
+        const encoding = typeof options === 'string' ? options : options.encoding;
+        const decoder = new TextDecoder(encoding);
+        return decoder.decode(content);
+      }
+    });
+  }
+
   public async writeFile(
     path: string | Path,
-    stream: ReadableStream,
+    stream: ReadableStream<Uint8Array>,
     options: WriteFileOptions = {}
   ): Promise<void> {
     return this.runAsync(() =>
@@ -88,6 +111,33 @@ export class BreadFS {
         (p) => p.fs.writeFile(p, stream, options)
       )
     );
+  }
+
+  public async writeText(
+    path: string | Path,
+    content: string,
+    options: BufferEncoding | EncodingOptions = 'utf-8'
+  ): Promise<void> {
+    await this.runAsync(async () => {
+      if (this.provider.writeText) {
+        const resolved: EncodingOptions =
+          typeof options === 'string' ? { encoding: options } : options;
+        await this.matchFS(
+          path,
+          (p) => this.provider.writeText!(p, content, resolved),
+          (p) => p.fs.writeText!(p, content, resolved)
+        );
+      } else {
+        // const encoding = typeof options === 'string' ? options : options.encoding;
+        const stream = new ReadableStream({
+          start(controller) {
+            controller.enqueue(content);
+            controller.close();
+          }
+        }).pipeThrough(new TextEncoderStream());
+        await this.writeFile(path, stream);
+      }
+    });
   }
 
   public async remove(path: string | Path, options: RmOptions = {}): Promise<void> {
@@ -232,13 +282,17 @@ export class Path {
     return this._fs.readFile(this._path, options);
   }
 
-  public readText(content: string) {}
+  public readText(options: BufferEncoding | EncodingOptions = 'utf-8') {
+    return this._fs.readText(this._path, options);
+  }
 
   public writeFile(stream: ReadableStream, options: WriteFileOptions = {}) {
     return this._fs.writeFile(this._path, stream, options);
   }
 
-  public writeText(content: string) {}
+  public writeText(content: string, options: BufferEncoding | EncodingOptions = 'utf-8') {
+    return this._fs.writeText(this._path, content, options);
+  }
 
   public copyTo(dst: string | Path) {}
 
