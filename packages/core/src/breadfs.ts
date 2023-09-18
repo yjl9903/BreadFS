@@ -26,8 +26,8 @@ export class BreadFS {
     return new BreadFS(provider);
   }
 
-  public path(...path: (string | Path)[]): Path {
-    const ps = pathe.join(...path.map((p) => (typeof p === 'string' ? p : p.path)));
+  public path(root: string | Path, ...paths: string[]): Path {
+    const ps = pathe.join(typeof root === 'string' ? root : root.path, ...paths);
     return new Path(this, ps);
   }
 
