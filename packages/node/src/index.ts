@@ -2,9 +2,9 @@ import type { ReadableStream, WritableStream } from 'node:stream/web';
 
 import { inspect } from 'node:util';
 import { Readable, Writable } from 'node:stream';
-import { promises as fs, createReadStream, createWriteStream, MakeDirectoryOptions } from 'node:fs';
+import { promises as fs, createReadStream, createWriteStream } from 'node:fs';
 
-import { Path, BreadFSProvider, FileStat } from '@breadfs/core';
+import { Path, BreadFSProvider, FileStat, RmOptions, MakeDirectoryOptions } from '@breadfs/core';
 
 // @ts-ignore
 Path.prototype[inspect.custom] = function () {
@@ -14,7 +14,7 @@ Path.prototype[inspect.custom] = function () {
 export class NodeProvider implements BreadFSProvider {
   public readonly name = 'node';
 
-  public async mkdir(path: string, options: MakeDirectoryOptions = {}): Promise<void> {
+  public async mkdir(path: string, options: MakeDirectoryOptions): Promise<void> {
     await fs.mkdir(path, options);
   }
 
@@ -36,11 +36,11 @@ export class NodeProvider implements BreadFSProvider {
     throw new Error('Method not implemented.');
   }
 
-  public remove(path: string): Promise<void> {
-    throw new Error('Method not implemented.');
+  public async remove(path: string, options: RmOptions): Promise<void> {
+    await fs.rm(path, options);
   }
 
-  public stat(path: string): Promise<FileStat> {
+  public async stat(path: string): Promise<FileStat> {
     throw new Error('Method not implemented.');
   }
 
@@ -53,7 +53,7 @@ export class NodeProvider implements BreadFSProvider {
     }
   }
 
-  public list(path: string): Promise<string[]> {
+  public async list(path: string): Promise<string[]> {
     throw new Error('Method not implemented.');
   }
 }

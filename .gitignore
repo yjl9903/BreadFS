@@ -4,6 +4,7 @@ node_modules
 # Build output
 dist
 .turbo
+.temp
 
 # Rest pulled from https://github.com/github/gitignore/blob/master/Node.gitignore
 # Logs

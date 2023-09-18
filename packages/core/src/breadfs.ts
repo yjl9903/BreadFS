@@ -3,7 +3,7 @@ import type { ReadableStream, WritableStream } from 'node:stream/web';
 import pathe from 'pathe';
 
 import { BreadFSError } from './error';
-import { BreadFSProvider, FileStat, MakeDirectoryOptions } from './provider';
+import { BreadFSProvider, FileStat, MakeDirectoryOptions, RmOptions } from './provider';
 
 export class BreadFS {
   public readonly provider: BreadFSProvider;
@@ -20,6 +20,99 @@ export class BreadFS {
     return new Path(this, path);
   }
 
+  public createReadStream(path: string | Path): ReadableStream<any> {
+    return this.runSync(() =>
+      this.matchFS(
+        path,
+        (p) => this.provider.createReadStream(p),
+        (p) => p.fs.createReadStream(p)
+      )
+    );
+  }
+
+  public createWriteStream(path: string | Path): WritableStream<any> {
+    return this.runSync(() =>
+      this.matchFS(
+        path,
+        (p) => this.provider.createWriteStream(p),
+        (p) => p.fs.createWriteStream(p)
+      )
+    );
+  }
+
+  public async mkdir(path: string | Path, options: MakeDirectoryOptions = {}): Promise<Path> {
+    const resolved: MakeDirectoryOptions = { recursive: true, ...options };
+    return this.runAsync(() =>
+      this.matchFS(
+        path,
+        async (p) => (await this.provider.mkdir(p, resolved), this.path(p)),
+        async (p) => p.fs.mkdir(p, resolved)
+      )
+    );
+  }
+
+  public readFile(path: string | Path): ReadableStream {
+    return this.runSync(() =>
+      this.matchFS(
+        path,
+        (p) => this.provider.readFile(p),
+        (p) => p.fs.readFile(p)
+      )
+    );
+  }
+
+  public async writeFile(path: string | Path, stream: ReadableStream): Promise<void> {
+    return this.runAsync(() =>
+      this.matchFS(
+        path,
+        (p) => this.provider.writeFile(p, stream),
+        (p) => p.fs.writeFile(p, stream)
+      )
+    );
+  }
+
+  public async remove(path: string | Path, options: RmOptions = {}): Promise<void> {
+    const resolved: RmOptions = { recursive: true, force: true, ...options };
+    return this.runAsync(() =>
+      this.matchFS(
+        path,
+        (p) => this.provider.remove(p, resolved),
+        (p) => p.fs.remove(p, resolved)
+      )
+    );
+  }
+
+  public async exists(path: string | Path): Promise<boolean> {
+    return this.runAsync(() =>
+      this.matchFS(
+        path,
+        (p) => this.provider.exists(p),
+        (p) => p.fs.exists(p)
+      )
+    );
+  }
+
+  public async stat(path: string | Path): Promise<FileStat> {
+    return this.runAsync(() =>
+      this.matchFS(
+        path,
+        (p) => this.provider.stat(p),
+        (p) => p.fs.stat(p)
+      )
+    );
+  }
+
+  public async list(path: string | Path): Promise<Path[]> {
+    return this.runAsync(() =>
+      this.matchFS(
+        path,
+        async (p) => (await this.provider.list(p)).map((p) => this.path(p)),
+        (p) => p.fs.list(p)
+      )
+    );
+  }
+
+  // ---
   private matchFS<T extends {}>(
     path: string | Path,
     match: (path: string) => T,
@@ -49,86 +142,7 @@ export class BreadFS {
       throw new BreadFSError(error);
     }
   }
-
-  public createReadStream(path: string | Path): ReadableStream<any> {
-    return this.runSync(() =>
-      this.matchFS(
-        path,
-        (p) => this.provider.createReadStream(p),
-        (p) => p.fs.createReadStream(p)
-      )
-    );
-  }
-
-  public createWriteStream(path: string | Path): WritableStream<any> {
-    return this.runSync(() =>
-      this.matchFS(
-        path,
-        (p) => this.provider.createWriteStream(p),
-        (p) => p.fs.createWriteStream(p)
-      )
-    );
-  }
-
-  public async mkdir(path: string | Path, options: MakeDirectoryOptions = {}): Promise<Path> {
-    return this.runAsync(() =>
-      this.matchFS(
-        path,
-        async (p) => (await this.provider.mkdir(p, options), this.path(p)),
-        async (p) => p.fs.mkdir(p, options)
-      )
-    );
-  }
-
-  public readFile(path: string | Path): ReadableStream {
-    return this.runSync(() =>
-      this.matchFS(
-        path,
-        (p) => this.provider.readFile(p),
-        (p) => p.fs.readFile(p)
-      )
-    );
-  }
-
-  public async writeFile(path: string | Path, stream: ReadableStream): Promise<void> {
-    return this.runAsync(() =>
-      this.matchFS(
-        path,
-        (p) => this.provider.writeFile(p, stream),
-        (p) => p.fs.writeFile(p, stream)
-      )
-    );
-  }
-
-  public async remove(path: string | Path): Promise<void> {
-    return this.runAsync(() =>
-      this.matchFS(
-        path,
-        (p) => this.provider.remove(p),
-        (p) => p.fs.remove(p)
-      )
-    );
-  }
-
-  public async stat(path: string | Path): Promise<FileStat> {
-    return this.runAsync(() =>
-      this.matchFS(
-        path,
-        (p) => this.provider.stat(p),
-        (p) => p.fs.stat(p)
-      )
-    );
-  }
-
-  public async list(path: string | Path): Promise<Path[]> {
-    return this.runAsync(() =>
-      this.matchFS(
-        path,
-        async (p) => (await this.provider.list(p)).map((p) => this.path(p)),
-        (p) => p.fs.list(p)
-      )
-    );
-  }
+  // ---
 }
 
 export class Path {
@@ -184,7 +198,7 @@ export class Path {
   }
 
   public async exists(): Promise<boolean> {
-    return true;
+    return await this._fs.exists(this._path);
   }
 
   public readFile() {
@@ -200,6 +214,10 @@ export class Path {
   public writeText() {}
 
   public copyTo(dst: string | Path) {}
+
+  public async remove(options: RmOptions = {}): Promise<void> {
+    await this._fs.remove(this._path);
+  }
 
   // Utils
   public toString() {
