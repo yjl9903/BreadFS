@@ -13,13 +13,13 @@ export interface BreadFSProvider {
 
   createWriteStream: (path: string) => WritableStream<any>;
 
-  readFile: (path: string) => ReadableStream;
+  readFile: (path: string) => Promise<Buffer>;
 
-  readText?: (path: string) => string;
+  readText?: (path: string) => Promise<string>;
 
   writeFile: (path: string, stream: ReadableStream) => Promise<void>;
 
-  writeText?: (path: string) => Promise<void>;
+  writeText?: (path: string, content: string) => Promise<void>;
 
   copyFile?: (src: string, dst: string) => Promise<void>;
 

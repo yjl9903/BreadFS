@@ -1,8 +1,14 @@
 import type { ReadableStream, WritableStream } from 'node:stream/web';
 
-import { WebDAVClient, WebDAVClientOptions, createClient } from 'webdav';
+import { Readable, Writable } from 'node:stream';
+import {
+  createClient,
+  WebDAVClient,
+  WebDAVClientOptions,
+  FileStat as WebDAVFileStat
+} from 'webdav';
 
-import { BreadFSProvider, FileStat } from '@breadfs/core';
+import { BreadFSProvider, FileStat, MakeDirectoryOptions, RmOptions } from '@breadfs/core';
 
 export { AuthType, Headers, OAuthToken } from 'webdav';
 
@@ -19,39 +25,49 @@ export class WebDAVProvider implements BreadFSProvider {
     return new WebDAVProvider(remoteURL, options);
   }
 
-  public async mkdir(path: string): Promise<void> {
-    await this.client.createDirectory(path);
-  }
-
   public createReadStream(path: string): ReadableStream<any> {
-    throw new Error('Method not implemented.');
+    const stream = this.client.createReadStream(path);
+    return Readable.toWeb(stream);
   }
 
   public createWriteStream(path: string): WritableStream<any> {
+    const stream = this.client.createWriteStream(path);
+    return Writable.toWeb(stream);
+  }
+
+  public async mkdir(path: string, options: MakeDirectoryOptions): Promise<void> {
+    await this.client.createDirectory(path, options);
+  }
+
+  public async readFile(path: string): Promise<Buffer> {
     throw new Error('Method not implemented.');
   }
 
-  public readFile(path: string): ReadableStream<any> {
+  public async writeFile(path: string, stream: ReadableStream<any>): Promise<void> {
     throw new Error('Method not implemented.');
   }
 
-  public writeFile(path: string, stream: ReadableStream<any>): Promise<void> {
-    throw new Error('Method not implemented.');
+  public async remove(path: string): Promise<void> {
+    await this.client.deleteFile(path);
   }
 
-  public remove(path: string): Promise<void> {
-    throw new Error('Method not implemented.');
+  public async stat(path: string): Promise<FileStat> {
+    const stat = (await this.client.stat(path)) as WebDAVFileStat;
+
+    return {
+      size: stat.size,
+      isFile: stat.type === 'file',
+      isDirectory: stat.type === 'directory',
+      mtime: new Date(stat.lastmod),
+      birthtime: undefined
+    };
   }
 
-  public stat(path: string): Promise<FileStat> {
-    throw new Error('Method not implemented.');
+  public async exists(path: string): Promise<boolean> {
+    return await this.client.exists(path);
   }
 
-  public exists(path: string): Promise<boolean> {
-    throw new Error('Method not implemented.');
-  }
-
-  public list(path: string): Promise<string[]> {
+  public async list(path: string): Promise<string[]> {
     throw new Error('Method not implemented.');
   }
 }

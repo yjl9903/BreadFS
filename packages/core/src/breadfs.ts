@@ -2,7 +2,6 @@ import type { ReadableStream, WritableStream } from 'node:stream/web';
 
 import pathe from 'pathe';
 
-import { BreadFSError } from './error';
 import {
   FileStat,
   BreadFSProvider,
@@ -11,6 +10,7 @@ import {
   StatOptions,
   MakeDirectoryOptions
 } from './provider';
+import { BreadFSError } from './error';
 
 export class BreadFS {
   public readonly provider: BreadFSProvider;
@@ -58,8 +58,8 @@ export class BreadFS {
     );
   }
 
-  public readFile(path: string | Path): ReadableStream {
-    return this.runSync(() =>
+  public async readFile(path: string | Path): Promise<Buffer> {
+    return this.runAsync(() =>
       this.matchFS(
         path,
         (p) => this.provider.readFile(p),
@@ -212,13 +212,13 @@ export class Path {
     return this._fs.readFile(this._path);
   }
 
-  public readText() {}
+  public readText(content: string) {}
 
   public writeFile(stream: ReadableStream) {
     return this._fs.writeFile(this._path, stream);
   }
 
-  public writeText() {}
+  public writeText(content: string) {}
 
   public copyTo(dst: string | Path) {}
 

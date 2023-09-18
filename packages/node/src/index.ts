@@ -21,10 +21,6 @@ Path.prototype[inspect.custom] = function () {
 export class NodeProvider implements BreadFSProvider {
   public readonly name = 'node';
 
-  public async mkdir(path: string, options: MakeDirectoryOptions): Promise<void> {
-    await fs.mkdir(path, options);
-  }
-
   public createReadStream(path: string): ReadableStream<any> {
     const stream = createReadStream(path);
     return Readable.toWeb(stream);
@@ -35,11 +31,23 @@ export class NodeProvider implements BreadFSProvider {
     return Writable.toWeb(stream);
   }
 
-  public readFile(path: string): ReadableStream<any> {
+  public async mkdir(path: string, options: MakeDirectoryOptions): Promise<void> {
+    await fs.mkdir(path, options);
+  }
+
+  public async readFile(path: string): Promise<Buffer> {
+    return await fs.readFile(path);
+  }
+
+  public async readText(path: string): Promise<string> {
+    return await fs.readFile(path, 'utf-8');
+  }
+
+  public async writeFile(path: string, stream: ReadableStream<any>): Promise<void> {
     throw new Error('Method not implemented.');
   }
 
-  public writeFile(path: string, stream: ReadableStream<any>): Promise<void> {
+  public async writeText(path: string, content: string): Promise<void> {
     throw new Error('Method not implemented.');
   }
 
