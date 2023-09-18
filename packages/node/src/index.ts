@@ -2,7 +2,7 @@ import type { ReadableStream, WritableStream } from 'node:stream/web';
 
 import { inspect } from 'node:util';
 import { Readable, Writable } from 'node:stream';
-import { promises as fs, createReadStream, createWriteStream } from 'node:fs';
+import { promises as fs, createReadStream, createWriteStream, MakeDirectoryOptions } from 'node:fs';
 
 import { Path, BreadFSProvider, FileStat } from '@breadfs/core';
 
@@ -14,8 +14,8 @@ Path.prototype[inspect.custom] = function () {
 export class NodeProvider implements BreadFSProvider {
   public readonly name = 'node';
 
-  public async mkdir(path: string): Promise<void> {
-    await fs.mkdir(path);
+  public async mkdir(path: string, options: MakeDirectoryOptions = {}): Promise<void> {
+    await fs.mkdir(path, options);
   }
 
   public createReadStream(path: string): ReadableStream<any> {
