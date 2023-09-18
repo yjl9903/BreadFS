@@ -45,6 +45,10 @@ export interface RmOptions {
   retryDelay?: number | undefined;
 }
 
+export interface StatOptions {
+  bigint?: boolean | undefined;
+}
+
 export interface ListOptions {
   withFileTypes?: false | undefined;
 

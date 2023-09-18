@@ -4,11 +4,12 @@ import pathe from 'pathe';
 
 import { BreadFSError } from './error';
 import {
-  BreadFSProvider,
   FileStat,
+  BreadFSProvider,
   ListOptions,
-  MakeDirectoryOptions,
-  RmOptions
+  RmOptions,
+  StatOptions,
+  MakeDirectoryOptions
 } from './provider';
 
 export class BreadFS {
@@ -98,12 +99,12 @@ export class BreadFS {
     );
   }
 
-  public async stat(path: string | Path): Promise<FileStat> {
+  public async stat(path: string | Path, options: StatOptions = {}): Promise<FileStat> {
     return this.runAsync(() =>
       this.matchFS(
         path,
-        (p) => this.provider.stat(p),
-        (p) => p.fs.stat(p)
+        (p) => this.provider.stat(p, options),
+        (p) => p.fs.stat(p, options)
       )
     );
   }
@@ -191,15 +192,15 @@ export class Path {
     await this._fs.mkdir(this._path, options);
   }
 
-  public async stat(): Promise<FileStat> {
-    return this._fs.stat(this._path);
-  }
-
-  public async isDirectory(): Promise<boolean> {
-    return (await this.stat()).isDirectory;
+  public async stat(options: StatOptions = {}): Promise<FileStat> {
+    return this._fs.stat(this._path, options);
   }
 
   public async isFile(): Promise<boolean> {
+    return (await this.stat()).isFile;
+  }
+
+  public async isDirectory(): Promise<boolean> {
     return (await this.stat()).isDirectory;
   }
 

@@ -1,6 +1,6 @@
 import type { ReadableStream, WritableStream } from 'node:stream/web';
 
-import type { MakeDirectoryOptions, RmOptions, FileStat, ListOptions } from './types';
+import type { FileStat, MakeDirectoryOptions, RmOptions, ListOptions, StatOptions } from './types';
 
 export type * from './types';
 
@@ -25,7 +25,7 @@ export interface BreadFSProvider {
 
   remove: (path: string, options: RmOptions) => Promise<void>;
 
-  stat: (path: string) => Promise<FileStat>;
+  stat: (path: string, options: StatOptions) => Promise<FileStat>;
 
   exists: (path: string) => Promise<boolean>;
 

@@ -33,4 +33,11 @@ describe('File System', () => {
       ]
     `);
   });
+
+  it('should stat', async () => {
+    expect(await fs.path('src').isFile()).toBeFalsy();
+    expect(await fs.path('src').isDirectory()).toBeTruthy();
+    expect(await fs.path('package.json').isFile()).toBeTruthy();
+    expect(await fs.path('package.json').isDirectory()).toBeFalsy();
+  });
 });

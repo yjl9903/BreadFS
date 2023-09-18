@@ -2,7 +2,7 @@ import type { ReadableStream, WritableStream } from 'node:stream/web';
 
 import { inspect } from 'node:util';
 import { Readable, Writable } from 'node:stream';
-import { promises as fs, createReadStream, createWriteStream } from 'node:fs';
+import { promises as fs, createReadStream, createWriteStream, StatOptions } from 'node:fs';
 
 import {
   Path,
@@ -47,8 +47,16 @@ export class NodeProvider implements BreadFSProvider {
     await fs.rm(path, options);
   }
 
-  public async stat(path: string): Promise<FileStat> {
-    throw new Error('Method not implemented.');
+  public async stat(path: string, options: StatOptions): Promise<FileStat> {
+    const stat = await fs.stat(path, options);
+
+    return {
+      size: stat.size,
+      isDirectory: stat.isDirectory(),
+      isFile: stat.isFile(),
+      mtime: stat.mtime,
+      birthtime: stat.birthtime
+    };
   }
 
   public async exists(path: string): Promise<boolean> {
