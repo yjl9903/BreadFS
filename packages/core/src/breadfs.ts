@@ -161,6 +161,7 @@ export class BreadFS {
           if (this.provider.copyFile && (typeof dst === 'string' || this === dst.fs)) {
             // Copy in the same fs and copyFile is provided
             await this.provider.copyFile(src, dstPath);
+            return;
           }
           // Use stream to implement copy
           const read = this.createReadStream(src);
