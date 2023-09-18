@@ -62,4 +62,15 @@ describe('File System', () => {
     expect(await txt.readText()).toBe('hello');
     await txt.remove();
   });
+
+  it('should copy', async () => {
+    const from = fs.path(temp, 'copied.txt');
+    const to = fs.path(temp, 'pasted.txt');
+    await from.writeText('hello');
+    await from.copyTo(to);
+    expect(await to.readText()).toBe('hello');
+
+    await from.remove();
+    await to.remove();
+  });
 });
