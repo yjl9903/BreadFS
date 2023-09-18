@@ -11,6 +11,10 @@ Unified File System abstraction.
 npm i breadfs
 ```
 
+> **Notice**
+>
+> This package is built on the web native [Streams API](https://developer.mozilla.org/en-US/docs/Web/API/Streams_API). You should add `"lib": ["DOM"]` to your `tsconfig.json`.
+
 ## Usage
 
 ```ts
