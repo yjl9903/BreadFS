@@ -242,14 +242,12 @@ export class Path {
     return pathe.dirname(this._path);
   }
 
-  public join(...pieces: (string | Path)[]): Path {
-    const ps = pathe.join(...pieces.map((p) => (typeof p === 'string' ? p : p.path)));
-    return new Path(this._fs, pathe.join(this._path, ...ps));
+  public join(...pieces: string[]): Path {
+    return new Path(this._fs, pathe.join(this._path, ...pieces));
   }
 
-  public resolve(...pieces: (string | Path)[]): Path {
-    const ps = pathe.join(...pieces.map((p) => (typeof p === 'string' ? p : p.path)));
-    return new Path(this._fs, pathe.resolve(this._path, ...ps));
+  public resolve(...pieces: string[]): Path {
+    return new Path(this._fs, pathe.resolve(this._path, ...pieces));
   }
 
   // File system access related
