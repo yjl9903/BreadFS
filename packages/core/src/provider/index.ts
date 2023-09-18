@@ -1,6 +1,12 @@
-import type { ReadableStream, WritableStream } from 'node:stream/web';
-
-import type { FileStat, MakeDirectoryOptions, RmOptions, ListOptions, StatOptions } from './types';
+import type {
+  FileStat,
+  MakeDirectoryOptions,
+  RmOptions,
+  ListOptions,
+  StatOptions,
+  ReadStreamOptions,
+  WriteStreamOptions
+} from './types';
 
 export type * from './types';
 
@@ -9,9 +15,9 @@ export interface BreadFSProvider {
 
   mkdir: (path: string, options: MakeDirectoryOptions) => Promise<void>;
 
-  createReadStream: (path: string) => ReadableStream<any>;
+  createReadStream: (path: string, options: ReadStreamOptions) => ReadableStream<any>;
 
-  createWriteStream: (path: string) => WritableStream<any>;
+  createWriteStream: (path: string, options: WriteStreamOptions) => WritableStream<any>;
 
   readFile: (path: string) => Promise<Buffer>;
 

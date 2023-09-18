@@ -1,5 +1,3 @@
-import type { ReadableStream, WritableStream } from 'node:stream/web';
-
 import { inspect } from 'node:util';
 import { Readable, Writable } from 'node:stream';
 import { promises as fs, createReadStream, createWriteStream, StatOptions } from 'node:fs';
@@ -23,12 +21,12 @@ export class NodeProvider implements BreadFSProvider {
 
   public createReadStream(path: string): ReadableStream<any> {
     const stream = createReadStream(path);
-    return Readable.toWeb(stream);
+    return Readable.toWeb(stream) as ReadableStream;
   }
 
   public createWriteStream(path: string): WritableStream<any> {
     const stream = createWriteStream(path);
-    return Writable.toWeb(stream);
+    return Writable.toWeb(stream) as WritableStream;
   }
 
   public async mkdir(path: string, options: MakeDirectoryOptions): Promise<void> {

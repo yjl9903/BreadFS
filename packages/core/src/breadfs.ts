@@ -1,5 +1,3 @@
-import type { ReadableStream, WritableStream } from 'node:stream/web';
-
 import pathe from 'pathe';
 
 import {
@@ -8,7 +6,9 @@ import {
   ListOptions,
   RmOptions,
   StatOptions,
-  MakeDirectoryOptions
+  MakeDirectoryOptions,
+  ReadStreamOptions,
+  WriteStreamOptions
 } from './provider';
 import { BreadFSError } from './error';
 
@@ -27,22 +27,28 @@ export class BreadFS {
     return new Path(this, pathe.join(...path));
   }
 
-  public createReadStream(path: string | Path): ReadableStream<any> {
+  public createReadStream(
+    path: string | Path,
+    options: ReadStreamOptions = {}
+  ): ReadableStream<any> {
     return this.runSync(() =>
       this.matchFS(
         path,
-        (p) => this.provider.createReadStream(p),
-        (p) => p.fs.createReadStream(p)
+        (p) => this.provider.createReadStream(p, options),
+        (p) => p.fs.createReadStream(p, options)
       )
     );
   }
 
-  public createWriteStream(path: string | Path): WritableStream<any> {
+  public createWriteStream(
+    path: string | Path,
+    options: WriteStreamOptions = {}
+  ): WritableStream<any> {
     return this.runSync(() =>
       this.matchFS(
         path,
-        (p) => this.provider.createWriteStream(p),
-        (p) => p.fs.createWriteStream(p)
+        (p) => this.provider.createWriteStream(p, options),
+        (p) => p.fs.createWriteStream(p, options)
       )
     );
   }
@@ -188,6 +194,14 @@ export class Path {
   }
 
   // File system access related
+  public createReadStream(options: ReadStreamOptions = {}) {
+    return this._fs.createReadStream(this._path, options);
+  }
+
+  public createWriteStream(options: WriteStreamOptions = {}) {
+    return this._fs.createWriteStream(this._path, options);
+  }
+
   public async mkdir(options: MakeDirectoryOptions = {}): Promise<void> {
     await this._fs.mkdir(this._path, options);
   }

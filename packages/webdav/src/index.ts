@@ -1,5 +1,3 @@
-import type { ReadableStream, WritableStream } from 'node:stream/web';
-
 import { Readable, Writable } from 'node:stream';
 import {
   createClient,
@@ -8,7 +6,7 @@ import {
   FileStat as WebDAVFileStat
 } from 'webdav';
 
-import { BreadFSProvider, FileStat, MakeDirectoryOptions, RmOptions } from '@breadfs/core';
+import { BreadFSProvider, FileStat, MakeDirectoryOptions } from '@breadfs/core';
 
 export { AuthType, Headers, OAuthToken } from 'webdav';
 
@@ -27,12 +25,12 @@ export class WebDAVProvider implements BreadFSProvider {
 
   public createReadStream(path: string): ReadableStream<any> {
     const stream = this.client.createReadStream(path);
-    return Readable.toWeb(stream);
+    return Readable.toWeb(stream) as ReadableStream;
   }
 
   public createWriteStream(path: string): WritableStream<any> {
     const stream = this.client.createWriteStream(path);
-    return Writable.toWeb(stream);
+    return Writable.toWeb(stream) as WritableStream;
   }
 
   public async mkdir(path: string, options: MakeDirectoryOptions): Promise<void> {

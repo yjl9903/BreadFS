@@ -1,3 +1,9 @@
+export interface StreamOptions {}
+
+export interface ReadStreamOptions extends StreamOptions {}
+
+export interface WriteStreamOptions extends StreamOptions {}
+
 export interface MakeDirectoryOptions {
   /**
    * Indicates whether parent folders should be created.
