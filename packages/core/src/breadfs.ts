@@ -32,9 +32,7 @@ export class BreadFS {
   public createReadStream(
     path: string | Path,
     options: ReadStreamOptions = {}
-  ): ReadableStream<Uint8Array> & {
-    [Symbol.asyncIterator](): AsyncIterator<Uint8Array>;
-  } {
+  ): ReadableStream<Uint8Array> {
     return this.runSync(() =>
       this.matchFS(
         path,

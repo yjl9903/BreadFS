@@ -8,7 +8,9 @@ import {
   FileStat,
   RmOptions,
   MakeDirectoryOptions,
-  ListOptions
+  ListOptions,
+  ReadFileOptions,
+  EncodingOptions
 } from '@breadfs/core';
 
 // @ts-ignore
@@ -35,20 +37,29 @@ export class NodeProvider implements BreadFSProvider {
     await fs.mkdir(path, options);
   }
 
-  public async readFile(path: string): Promise<Buffer> {
-    return await fs.readFile(path);
+  public async readFile(path: string, options: ReadFileOptions): Promise<Buffer> {
+    return await fs.readFile(path, options);
   }
 
-  public async readText(path: string): Promise<string> {
-    return await fs.readFile(path, 'utf-8');
+  public async readText(path: string, options: EncodingOptions): Promise<string> {
+    const res = await fs.readFile(path, options);
+    if (typeof res === 'string') {
+      return res;
+    } else {
+      return res.toString();
+    }
   }
 
-  public async writeFile(path: string, stream: ReadableStream<any>): Promise<void> {
-    throw new Error('Method not implemented.');
+  public async writeFile(
+    path: string,
+    stream: ReadableStream<Uint8Array>,
+    options: EncodingOptions
+  ): Promise<void> {
+    await fs.writeFile(path, stream, options);
   }
 
-  public async writeText(path: string, content: string): Promise<void> {
-    throw new Error('Method not implemented.');
+  public async writeText(path: string, content: string, options: EncodingOptions): Promise<void> {
+    await fs.writeFile(path, content, options);
   }
 
   public async remove(path: string, options: RmOptions): Promise<void> {
