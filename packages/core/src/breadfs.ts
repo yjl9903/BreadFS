@@ -8,7 +8,9 @@ import {
   StatOptions,
   MakeDirectoryOptions,
   ReadStreamOptions,
-  WriteStreamOptions
+  WriteStreamOptions,
+  ReadFileOptions,
+  WriteFileOptions
 } from './provider';
 import { BreadFSError } from './error';
 
@@ -64,22 +66,26 @@ export class BreadFS {
     );
   }
 
-  public async readFile(path: string | Path): Promise<Buffer> {
+  public async readFile(path: string | Path, options: ReadFileOptions = {}): Promise<Buffer> {
     return this.runAsync(() =>
       this.matchFS(
         path,
-        (p) => this.provider.readFile(p),
-        (p) => p.fs.readFile(p)
+        (p) => this.provider.readFile(p, options),
+        (p) => p.fs.readFile(p, options)
       )
     );
   }
 
-  public async writeFile(path: string | Path, stream: ReadableStream): Promise<void> {
+  public async writeFile(
+    path: string | Path,
+    stream: ReadableStream,
+    options: WriteFileOptions = {}
+  ): Promise<void> {
     return this.runAsync(() =>
       this.matchFS(
         path,
-        (p) => this.provider.writeFile(p, stream),
-        (p) => p.fs.writeFile(p, stream)
+        (p) => this.provider.writeFile(p, stream, options),
+        (p) => p.fs.writeFile(p, stream, options)
       )
     );
   }
@@ -222,14 +228,14 @@ export class Path {
     return await this._fs.exists(this._path);
   }
 
-  public readFile() {
-    return this._fs.readFile(this._path);
+  public readFile(options: ReadFileOptions = {}) {
+    return this._fs.readFile(this._path, options);
   }
 
   public readText(content: string) {}
 
-  public writeFile(stream: ReadableStream) {
-    return this._fs.writeFile(this._path, stream);
+  public writeFile(stream: ReadableStream, options: WriteFileOptions = {}) {
+    return this._fs.writeFile(this._path, stream, options);
   }
 
   public writeText(content: string) {}

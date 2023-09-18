@@ -4,6 +4,27 @@ export interface ReadStreamOptions extends StreamOptions {}
 
 export interface WriteStreamOptions extends StreamOptions {}
 
+export type BufferEncoding =
+  | 'ascii'
+  | 'utf8'
+  | 'utf-8'
+  | 'utf16le'
+  | 'ucs2'
+  | 'ucs-2'
+  | 'base64'
+  | 'base64url'
+  | 'latin1'
+  | 'binary'
+  | 'hex';
+
+export interface EncodingOptions {
+  encoding?: BufferEncoding;
+}
+
+export interface ReadFileOptions {}
+
+export interface WriteFileOptions {}
+
 export interface MakeDirectoryOptions {
   /**
    * Indicates whether parent folders should be created.

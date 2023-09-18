@@ -5,7 +5,10 @@ import type {
   ListOptions,
   StatOptions,
   ReadStreamOptions,
-  WriteStreamOptions
+  WriteStreamOptions,
+  EncodingOptions,
+  WriteFileOptions,
+  ReadFileOptions
 } from './types';
 
 export type * from './types';
@@ -19,13 +22,17 @@ export interface BreadFSProvider {
 
   createWriteStream: (path: string, options: WriteStreamOptions) => WritableStream<any>;
 
-  readFile: (path: string) => Promise<Buffer>;
+  readFile: (path: string, options: ReadFileOptions) => Promise<Buffer>;
 
-  readText?: (path: string) => Promise<string>;
+  readText?: (path: string, options: BufferEncoding | EncodingOptions) => Promise<string>;
 
-  writeFile: (path: string, stream: ReadableStream) => Promise<void>;
+  writeFile: (path: string, stream: ReadableStream, options: WriteFileOptions) => Promise<void>;
 
-  writeText?: (path: string, content: string) => Promise<void>;
+  writeText?: (
+    path: string,
+    content: string,
+    options: BufferEncoding | EncodingOptions
+  ) => Promise<void>;
 
   copyFile?: (src: string, dst: string) => Promise<void>;
 
