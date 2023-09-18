@@ -3,7 +3,13 @@ import type { ReadableStream, WritableStream } from 'node:stream/web';
 import pathe from 'pathe';
 
 import { BreadFSError } from './error';
-import { BreadFSProvider, FileStat, MakeDirectoryOptions, RmOptions } from './provider';
+import {
+  BreadFSProvider,
+  FileStat,
+  ListOptions,
+  MakeDirectoryOptions,
+  RmOptions
+} from './provider';
 
 export class BreadFS {
   public readonly provider: BreadFSProvider;
@@ -16,8 +22,8 @@ export class BreadFS {
     return new BreadFS(provider);
   }
 
-  public path(path: string): Path {
-    return new Path(this, path);
+  public path(...path: string[]): Path {
+    return new Path(this, pathe.join(...path));
   }
 
   public createReadStream(path: string | Path): ReadableStream<any> {
@@ -102,12 +108,12 @@ export class BreadFS {
     );
   }
 
-  public async list(path: string | Path): Promise<Path[]> {
+  public async list(path: string | Path, options: ListOptions = {}): Promise<Path[]> {
     return this.runAsync(() =>
       this.matchFS(
         path,
-        async (p) => (await this.provider.list(p)).map((p) => this.path(p)),
-        (p) => p.fs.list(p)
+        async (root) => (await this.provider.list(root, options)).map((sp) => this.path(root, sp)),
+        (root) => root.fs.list(root, options)
       )
     );
   }
@@ -216,7 +222,11 @@ export class Path {
   public copyTo(dst: string | Path) {}
 
   public async remove(options: RmOptions = {}): Promise<void> {
-    await this._fs.remove(this._path);
+    await this._fs.remove(this._path, options);
+  }
+
+  public async list(options: ListOptions = {}): Promise<Path[]> {
+    return await this._fs.list(this._path, options);
   }
 
   // Utils

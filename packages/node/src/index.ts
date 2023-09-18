@@ -4,7 +4,14 @@ import { inspect } from 'node:util';
 import { Readable, Writable } from 'node:stream';
 import { promises as fs, createReadStream, createWriteStream } from 'node:fs';
 
-import { Path, BreadFSProvider, FileStat, RmOptions, MakeDirectoryOptions } from '@breadfs/core';
+import {
+  Path,
+  BreadFSProvider,
+  FileStat,
+  RmOptions,
+  MakeDirectoryOptions,
+  ListOptions
+} from '@breadfs/core';
 
 // @ts-ignore
 Path.prototype[inspect.custom] = function () {
@@ -53,8 +60,8 @@ export class NodeProvider implements BreadFSProvider {
     }
   }
 
-  public async list(path: string): Promise<string[]> {
-    throw new Error('Method not implemented.');
+  public async list(path: string, options: ListOptions): Promise<string[]> {
+    return await fs.readdir(path, options);
   }
 }
 

@@ -45,6 +45,12 @@ export interface RmOptions {
   retryDelay?: number | undefined;
 }
 
+export interface ListOptions {
+  withFileTypes?: false | undefined;
+
+  recursive?: boolean | undefined;
+}
+
 export interface FileStat {
   size: number | bigint | undefined;
 

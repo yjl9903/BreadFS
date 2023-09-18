@@ -21,4 +21,16 @@ describe('File System', () => {
     await tempdir.remove();
     expect(await tempdir.exists()).toBeFalsy();
   });
+
+  it('should list', async () => {
+    const monorepo = fs.path('../');
+    expect((await monorepo.list()).map((p) => p.toString())).toMatchInlineSnapshot(`
+      [
+        "../breadfs",
+        "../core",
+        "../node",
+        "../webdav",
+      ]
+    `);
+  });
 });
