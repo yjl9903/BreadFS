@@ -25,9 +25,10 @@ describe('File System', () => {
   });
 
   it('should mkdir', async () => {
-    const tempdir = fs.path('.temp/dir');
+    const tempdir = fs.path(temp, 'nest/a/b/');
     await tempdir.mkdir();
     expect(await tempdir.exists()).toBeTruthy();
+
     await tempdir.remove();
     expect(await tempdir.exists()).toBeFalsy();
   });
@@ -56,7 +57,7 @@ describe('File System', () => {
   });
 
   it('should write text', async () => {
-    const txt = fs.path('.temp/test.txt');
+    const txt = fs.path(temp, 'test.txt');
     await txt.writeText('hello');
     expect(await txt.readText()).toBe('hello');
     await txt.remove();

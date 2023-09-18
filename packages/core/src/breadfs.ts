@@ -26,8 +26,9 @@ export class BreadFS {
     return new BreadFS(provider);
   }
 
-  public path(...path: string[]): Path {
-    return new Path(this, pathe.join(...path));
+  public path(...path: (string | Path)[]): Path {
+    const ps = pathe.join(...path.map((p) => (typeof p === 'string' ? p : p.path)));
+    return new Path(this, ps);
   }
 
   public createReadStream(
