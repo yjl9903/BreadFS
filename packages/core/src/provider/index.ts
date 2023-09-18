@@ -18,9 +18,14 @@ export interface BreadFSProvider {
 
   mkdir: (path: string, options: MakeDirectoryOptions) => Promise<void>;
 
-  createReadStream: (path: string, options: ReadStreamOptions) => ReadableStream<any>;
+  createReadStream: (
+    path: string,
+    options: ReadStreamOptions
+  ) => ReadableStream<Uint8Array> & {
+    [Symbol.asyncIterator](): AsyncIterator<Uint8Array>;
+  };
 
-  createWriteStream: (path: string, options: WriteStreamOptions) => WritableStream<any>;
+  createWriteStream: (path: string, options: WriteStreamOptions) => WritableStream<Uint8Array>;
 
   readFile: (path: string, options: ReadFileOptions) => Promise<Buffer>;
 
