@@ -152,6 +152,27 @@ export class BreadFS {
     );
   }
 
+  public async copy(src: string | Path, dst: string | Path): Promise<void> {
+    return this.runAsync(() =>
+      this.matchFS(
+        src,
+        async (src) => {
+          const dstPath = typeof dst === 'string' ? dst : dst.path;
+          if (this.provider.copyFile && (typeof dst === 'string' || this === dst.fs)) {
+            // Copy in the same fs and copyFile is provided
+            await this.provider.copyFile(src, dstPath);
+          }
+          // Use stream to implement copy
+          const read = this.createReadStream(src);
+          const write =
+            typeof dst === 'string' ? this.createWriteStream(dst) : dst.fs.createWriteStream(dst);
+          await read.pipeTo(write);
+        },
+        (src) => src.fs.copy(src, dst)
+      )
+    );
+  }
+
   public async exists(path: string | Path): Promise<boolean> {
     return this.runAsync(() =>
       this.matchFS(
@@ -279,23 +300,25 @@ export class Path {
     return await this._fs.exists(this._path);
   }
 
-  public readFile(options: ReadFileOptions = {}) {
+  public async readFile(options: ReadFileOptions = {}) {
     return this._fs.readFile(this._path, options);
   }
 
-  public readText(options: BufferEncoding | EncodingOptions = 'utf-8') {
+  public async readText(options: BufferEncoding | EncodingOptions = 'utf-8') {
     return this._fs.readText(this._path, options);
   }
 
-  public writeFile(stream: ReadableStream, options: WriteFileOptions = {}) {
+  public async writeFile(stream: ReadableStream, options: WriteFileOptions = {}) {
     return this._fs.writeFile(this._path, stream, options);
   }
 
-  public writeText(content: string, options: BufferEncoding | EncodingOptions = 'utf-8') {
+  public async writeText(content: string, options: BufferEncoding | EncodingOptions = 'utf-8') {
     return this._fs.writeText(this._path, content, options);
   }
 
-  public copyTo(dst: string | Path) {}
+  public async copyTo(dst: string | Path) {
+    return this._fs.copy(this, dst);
+  }
 
   public async remove(options: RmOptions = {}): Promise<void> {
     await this._fs.remove(this._path, options);
