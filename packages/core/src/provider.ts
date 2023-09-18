@@ -1,6 +1,8 @@
 import type { ReadableStream, WritableStream } from 'node:stream/web';
 
 export interface BreadFSProvider {
+  readonly name: string;
+
   mkdir: (path: string, options?: MakeDirectoryOptions) => Promise<void>;
 
   createReadStream: (path: string) => ReadableStream<any>;

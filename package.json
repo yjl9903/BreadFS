@@ -2,6 +2,7 @@
   "name": "@breadfs/monorepo",
   "version": "0.0.2-beta.1",
   "private": true,
+  "type": "module",
   "scripts": {
     "build": "turbo run build",
     "dev": "turbo run dev --parallel",

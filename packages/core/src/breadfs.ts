@@ -3,7 +3,7 @@ import type { ReadableStream, WritableStream } from 'node:stream/web';
 import pathe from 'pathe';
 
 import { BreadFSError } from './error';
-import { BreadFSProvider, FileStat } from './provider';
+import { BreadFSProvider, FileStat, MakeDirectoryOptions } from './provider';
 
 export class BreadFS {
   public readonly provider: BreadFSProvider;
@@ -25,80 +25,108 @@ export class BreadFS {
     match: (path: string) => T,
     miss: (path: Path) => T
   ) {
+    if (typeof path === 'string') {
+      return match(path);
+    } else if (path.fs === this) {
+      return match(path.path);
+    } else {
+      return miss(path);
+    }
+  }
+
+  private runSync<T>(fn: () => T): T {
     try {
-      if (typeof path === 'string') {
-        return match(path);
-      } else if (path.fs === this) {
-        return match(path.path);
-      } else {
-        return miss(path);
-      }
+      return fn();
+    } catch (error) {
+      throw new BreadFSError(error);
+    }
+  }
+
+  private async runAsync<T>(fn: () => Promise<T>): Promise<T> {
+    try {
+      return await fn();
     } catch (error) {
       throw new BreadFSError(error);
     }
   }
 
   public createReadStream(path: string | Path): ReadableStream<any> {
-    return this.matchFS(
-      path,
-      (p) => this.provider.createReadStream(p),
-      (p) => p.fs.createReadStream(p)
+    return this.runSync(() =>
+      this.matchFS(
+        path,
+        (p) => this.provider.createReadStream(p),
+        (p) => p.fs.createReadStream(p)
+      )
     );
   }
 
   public createWriteStream(path: string | Path): WritableStream<any> {
-    return this.matchFS(
-      path,
-      (p) => this.provider.createWriteStream(p),
-      (p) => p.fs.createWriteStream(p)
+    return this.runSync(() =>
+      this.matchFS(
+        path,
+        (p) => this.provider.createWriteStream(p),
+        (p) => p.fs.createWriteStream(p)
+      )
     );
   }
 
-  public async mkdir(path: string | Path): Promise<Path> {
-    return this.matchFS(
-      path,
-      async (p) => (await this.provider.mkdir(p), this.path(p)),
-      async (p) => p.fs.mkdir(p)
+  public async mkdir(path: string | Path, options: MakeDirectoryOptions = {}): Promise<Path> {
+    return this.runAsync(() =>
+      this.matchFS(
+        path,
+        async (p) => (await this.provider.mkdir(p, options), this.path(p)),
+        async (p) => p.fs.mkdir(p, options)
+      )
     );
   }
 
   public readFile(path: string | Path): ReadableStream {
-    return this.matchFS(
-      path,
-      (p) => this.provider.readFile(p),
-      (p) => p.fs.readFile(p)
+    return this.runSync(() =>
+      this.matchFS(
+        path,
+        (p) => this.provider.readFile(p),
+        (p) => p.fs.readFile(p)
+      )
     );
   }
 
   public async writeFile(path: string | Path, stream: ReadableStream): Promise<void> {
-    return this.matchFS(
-      path,
-      (p) => this.provider.writeFile(p, stream),
-      (p) => p.fs.writeFile(p, stream)
+    return this.runAsync(() =>
+      this.matchFS(
+        path,
+        (p) => this.provider.writeFile(p, stream),
+        (p) => p.fs.writeFile(p, stream)
+      )
     );
   }
 
   public async remove(path: string | Path): Promise<void> {
-    return this.matchFS(
-      path,
-      (p) => this.provider.remove(p),
-      (p) => p.fs.remove(p)
+    return this.runAsync(() =>
+      this.matchFS(
+        path,
+        (p) => this.provider.remove(p),
+        (p) => p.fs.remove(p)
+      )
     );
   }
 
   public async stat(path: string | Path): Promise<FileStat> {
-    return this.matchFS(
-      path,
-      (p) => this.provider.stat(p),
-      (p) => p.fs.stat(p)
+    return this.runAsync(() =>
+      this.matchFS(
+        path,
+        (p) => this.provider.stat(p),
+        (p) => p.fs.stat(p)
+      )
     );
   }
 
   public async list(path: string | Path): Promise<Path[]> {
-    return this.matchFS(
-      path,
-      async (p) => (await this.provider.list(p)).map((p) => this.path(p)),
-      (p) => p.fs.list(p)
+    return this.runAsync(() =>
+      this.matchFS(
+        path,
+        async (p) => (await this.provider.list(p)).map((p) => this.path(p)),
+        (p) => p.fs.list(p)
+      )
     );
   }
 }
@@ -139,6 +167,10 @@ export class Path {
   }
 
   // File system access related
+  public async mkdir(options: MakeDirectoryOptions = {}): Promise<void> {
+    await this._fs.mkdir(this._path, options);
+  }
+
   public async stat(): Promise<FileStat> {
     return this._fs.stat(this._path);
   }

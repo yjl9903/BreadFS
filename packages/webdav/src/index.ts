@@ -7,7 +7,9 @@ import { BreadFSProvider, FileStat } from '@breadfs/core';
 export { AuthType, Headers, OAuthToken } from 'webdav';
 
 export class WebDAVProvider implements BreadFSProvider {
-  private client: WebDAVClient;
+  public readonly name = 'webdav';
+
+  private readonly client: WebDAVClient;
 
   public constructor(remoteURL: string, options: WebDAVClientOptions = {}) {
     this.client = createClient(remoteURL, options);

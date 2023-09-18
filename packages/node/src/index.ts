@@ -12,6 +12,8 @@ Path.prototype[inspect.custom] = function () {
 };
 
 export class NodeProvider implements BreadFSProvider {
+  public readonly name = 'node';
+
   public async mkdir(path: string): Promise<void> {
     await fs.mkdir(path);
   }
