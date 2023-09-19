@@ -34,26 +34,39 @@ describe('webdav', () => {
     }
   });
 
+  it('should read file', async () => {
+    expect((await fs.path('/notes.txt').readText()).trim()).toMatchInlineSnapshot(
+      '"Some short notes."'
+    );
+    expect((await fs.path('/format.json').readText()).trim()).toMatchInlineSnapshot(
+      '"{\\"test\\":true}"'
+    );
+  });
+
   it('should exists', async () => {
     expect(await fs.path('/notes.txt').exists()).toBeTruthy();
     expect(await fs.path('/nothing.txt').exists()).toBeFalsy();
   });
 
   it('should list files', async () => {
-    expect((await fs.path('/').list()).map((p) => p.path)).toMatchInlineSnapshot(`
+    expect(
+      (await fs.path('/').list())
+        .filter((p) => !p.path.endsWith('.DS_Store'))
+        .map((p) => p.path)
+        .sort()
+    ).toMatchInlineSnapshot(`
       [
-        "/sub1",
-        "/two words",
-        "/two%20words",
-        "/webdav",
-        "/with & in path",
-        "/.DS_Store",
         "/alrighty.jpg",
         "/file % name.txt",
         "/file&name.txt",
         "/format.json",
         "/notes.txt",
+        "/sub1",
         "/text document.txt",
+        "/two words",
+        "/two%20words",
+        "/webdav",
+        "/with & in path",
       ]
     `);
 
