@@ -64,5 +64,5 @@ export function createServer(dir: string, authType: 'basic' | 'digest') {
 }
 
 export function createWebDAVServer(authType: 'basic' | 'digest' = 'digest') {
-  return createServer(path.resolve(dirname, './fixtures'), authType);
+  return createServer(path.resolve(dirname, '../fixtures'), authType);
 }

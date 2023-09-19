@@ -34,7 +34,40 @@ describe('webdav', () => {
     }
   });
 
-  it('should work', async () => {
+  it('should exists', async () => {
+    expect(await fs.path('/notes.txt').exists()).toBeTruthy();
     expect(await fs.path('/nothing.txt').exists()).toBeFalsy();
+  });
+
+  it('should list files', async () => {
+    expect((await fs.path('/').list()).map((p) => p.path)).toMatchInlineSnapshot(`
+      [
+        "/sub1",
+        "/two words",
+        "/two%20words",
+        "/webdav",
+        "/with & in path",
+        "/.DS_Store",
+        "/alrighty.jpg",
+        "/file % name.txt",
+        "/file&name.txt",
+        "/format.json",
+        "/notes.txt",
+        "/text document.txt",
+      ]
+    `);
+
+    expect((await fs.path('/sub1').list()).map((p) => p.path)).toMatchInlineSnapshot(`
+      [
+        "/sub1/irrelephant.jpg",
+        "/sub1/ยากจน #1.txt",
+      ]
+    `);
+
+    expect((await fs.path('/webdav/server').list()).map((p) => p.path)).toMatchInlineSnapshot(`
+      [
+        "/webdav/server/notreal.txt",
+      ]
+    `);
   });
 });
