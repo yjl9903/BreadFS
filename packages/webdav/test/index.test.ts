@@ -1,5 +1,6 @@
 import { describe, it, expect, beforeAll, afterAll } from 'vitest';
 
+import { NodeFS } from '@breadfs/node';
 import { onDeath } from '@breadc/death';
 import { BreadFS } from '@breadfs/core';
 
@@ -8,10 +9,15 @@ import { WebDAVProvider, AuthType } from '../src';
 import { createWebDAVServer, PORT, USERNAME, PASSWORD } from './server';
 
 describe('webdav', () => {
+  const nfs = BreadFS.of(NodeFS);
+  const temp = nfs.path('.temp');
+
   let fs: BreadFS;
   let server: ReturnType<typeof createWebDAVServer> | undefined;
 
   beforeAll(async () => {
+    await temp.mkdir();
+
     server = createWebDAVServer();
     await server.start();
     onDeath(async () => {
@@ -28,6 +34,8 @@ describe('webdav', () => {
   });
 
   afterAll(async () => {
+    await temp.remove().catch(() => {});
+
     if (server) {
       await server.stop();
       server = undefined;
@@ -83,4 +91,73 @@ describe('webdav', () => {
       ]
     `);
   });
+
+  it('should copy file', async () => {
+    const notes = fs.path('/notes.txt');
+    const books = fs.path('/books.txt');
+    await notes.copyTo(books);
+    expect(await books.readText()).toBe(await notes.readText());
+    await books.remove();
+    expect(await books.exists()).toBeFalsy();
+  });
+
+  it('should move file', async () => {
+    const notes = fs.path('/format.json');
+    const books = fs.path('/format2.json');
+    const content = await notes.readText();
+
+    await notes.moveTo(books);
+    expect(await books.readText()).toBe(content);
+    await books.moveTo(notes);
+  });
+
+  it('should copy from node to webdav', async () => {
+    const node = temp.join('node.txt');
+    await node.writeText('This is from node');
+
+    const to = fs.path('/webdav/node-pasted.txt');
+    await node.copyTo(to);
+    await sleep(100);
+    expect(await to.readText()).toBe('This is from node');
+
+    await node.remove();
+    await to.remove();
+  });
+
+  it('should overwrite copy from node to webdav', async () => {
+    const node = temp.join('node.txt');
+    await node.writeText('This is from node - 1');
+
+    const to = fs.path('/webdav/node-pasted.txt');
+    await node.copyTo(to);
+    await sleep(20);
+
+    await node.writeText('This is from node - 2');
+    await node.copyTo(to);
+    await sleep(20);
+
+    await node.writeText('This is from node - 3');
+    await node.copyTo(to);
+    await sleep(20);
+
+    expect(await to.readText()).toBe('This is from node - 3');
+
+    await node.remove();
+    await to.remove();
+  });
+
+  it('should copy from webdav to node', async () => {
+    const notes = fs.path('/notes.txt');
+    const to = temp.join('notes-pasted.txt');
+
+    await notes.copyTo(to);
+    expect(await to.readText()).toBe(await notes.readText());
+    await to.remove();
+  });
 });
+
+function sleep(time: number): Promise<void> {
+  return new Promise((res) => {
+    setTimeout(() => res(), time);
+  });
+}

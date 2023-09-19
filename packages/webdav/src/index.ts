@@ -1,4 +1,3 @@
-import { createWriteStream } from 'node:fs';
 import { Readable, Writable } from 'node:stream';
 import {
   createClient,
@@ -9,6 +8,8 @@ import {
 
 import {
   BreadFSProvider,
+  CopyOptions,
+  MoveOptions,
   FileStat,
   ListOptions,
   MakeDirectoryOptions,
@@ -37,7 +38,7 @@ export class WebDAVProvider implements BreadFSProvider {
   }
 
   public createWriteStream(path: string) {
-    const stream = this.client.createWriteStream(path);
+    const stream = this.client.createWriteStream(path, { overwrite: true });
     return Writable.toWeb(stream) as WritableStream;
   }
 
@@ -56,6 +57,14 @@ export class WebDAVProvider implements BreadFSProvider {
     options: WriteFileOptions
   ): Promise<void> {
     await stream.pipeTo(this.createWriteStream(path));
+  }
+
+  public async copy(src: string, dst: string, options: CopyOptions) {
+    await this.client.copyFile(src, dst);
+  }
+
+  public async move(src: string, dst: string, options: MoveOptions) {
+    await this.client.moveFile(src, dst);
   }
 
   public async remove(path: string): Promise<void> {

@@ -17,7 +17,8 @@ import {
   CopyOptions,
   MoveOptions,
   ReadStreamOptions,
-  WriteStreamOptions
+  WriteStreamOptions,
+  WriteFileOptions
 } from '@breadfs/core';
 
 // @ts-ignore
@@ -58,7 +59,7 @@ export class NodeProvider implements BreadFSProvider {
   public async writeFile(
     path: string,
     stream: ReadableStream<Uint8Array>,
-    options: EncodingOptions
+    options: WriteFileOptions
   ): Promise<void> {
     await fs.writeFile(path, stream, options);
   }
