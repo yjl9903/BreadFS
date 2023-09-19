@@ -1,8 +1,15 @@
 {
   "name": "@breadfs/core",
   "version": "0.0.2-beta.1",
-  "description": "",
-  "keywords": [],
+  "description": "Unified File System Abstraction",
+  "keywords": [
+    "fs",
+    "file system",
+    "fs-extra",
+    "node",
+    "webdav",
+    "breadfs"
+  ],
   "homepage": "https://github.com/yjl9903/breadfs#readme",
   "bugs": {
     "url": "https://github.com/yjl9903/breadfs/issues"
