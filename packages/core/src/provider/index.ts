@@ -8,7 +8,9 @@ import type {
   WriteStreamOptions,
   EncodingOptions,
   WriteFileOptions,
-  ReadFileOptions
+  ReadFileOptions,
+  CopyOptions,
+  MoveOptions
 } from './types';
 
 export type * from './types';
@@ -30,7 +32,9 @@ export interface BreadFSProvider {
 
   writeText?: (path: string, content: string, options: EncodingOptions) => Promise<void>;
 
-  copyFile?: (src: string, dst: string) => Promise<void>;
+  copy?: (src: string, dst: string, options: CopyOptions) => Promise<void>;
+
+  move?: (src: string, dst: string, options: MoveOptions) => Promise<void>;
 
   remove: (path: string, options: RmOptions) => Promise<void>;
 

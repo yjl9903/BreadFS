@@ -1,6 +1,8 @@
 import { inspect } from 'node:util';
 import { Readable, Writable } from 'node:stream';
-import { promises as fs, createReadStream, createWriteStream, StatOptions } from 'node:fs';
+import { promises as fs, createReadStream, createWriteStream } from 'node:fs';
+
+import { copy, move } from 'fs-extra';
 
 import {
   Path,
@@ -9,8 +11,11 @@ import {
   RmOptions,
   MakeDirectoryOptions,
   ListOptions,
+  StatOptions,
   ReadFileOptions,
-  EncodingOptions
+  EncodingOptions,
+  CopyOptions,
+  MoveOptions
 } from '@breadfs/core';
 
 // @ts-ignore
@@ -62,6 +67,14 @@ export class NodeProvider implements BreadFSProvider {
 
   public async remove(path: string, options: RmOptions): Promise<void> {
     await fs.rm(path, options);
+  }
+
+  public async copy(src: string, dst: string, options: CopyOptions): Promise<void> {
+    await copy(src, dst, options);
+  }
+
+  public async move(src: string, dst: string, options: MoveOptions): Promise<void> {
+    await move(src, dst, options);
   }
 
   public async stat(path: string, options: StatOptions): Promise<FileStat> {

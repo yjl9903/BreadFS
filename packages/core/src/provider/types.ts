@@ -72,6 +72,55 @@ export interface RmOptions {
   retryDelay?: number | undefined;
 }
 
+export interface CopyOptions {
+  /**
+   * Dereference symlinks.
+   * @default false
+   */
+  dereference?: boolean | undefined;
+
+  /**
+   * Overwrite existing file or directory.
+   * _Note that the copy operation will silently fail if you set this to `false` and the destination exists._
+   * Use the `errorOnExist` option to change this behavior.
+   * @default true
+   */
+  overwrite?: boolean | undefined;
+
+  /**
+   * When `true`, will set last modification and access times to the ones of the original source files.
+   * When `false`, timestamp behavior is OS-dependent.
+   * @default false
+   */
+  preserveTimestamps?: boolean | undefined;
+
+  /**
+   * When `overwrite` is `false` and the destination exists, throw an error.
+   * @default false
+   */
+  errorOnExist?: boolean | undefined;
+
+  /**
+   * Function to filter copied files/directories. Return `true` to copy the item, `false` to ignore it.
+   * Can also return a `Promise` that resolves to `true` or `false` (or pass in an `async` function).
+   */
+  // filter?: CopyFilterSync | CopyFilterAsync | undefined;
+}
+
+export interface MoveOptions {
+  /**
+   * Overwrite existing file or directory.
+   * @default false
+   */
+  overwrite?: boolean | undefined;
+
+  /**
+   * Dereference symlinks.
+   * @default false
+   */
+  dereference?: boolean | undefined;
+}
+
 export interface StatOptions {
   bigint?: boolean | undefined;
 }

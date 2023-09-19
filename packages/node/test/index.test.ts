@@ -66,11 +66,26 @@ describe('File System', () => {
   it('should copy', async () => {
     const from = fs.path(temp, 'copied.txt');
     const to = fs.path(temp, 'pasted.txt');
+
     await from.writeText('hello');
     await from.copyTo(to);
+
     expect(await to.readText()).toBe('hello');
 
     await from.remove();
+    await to.remove();
+  });
+
+  it('should move', async () => {
+    const from = fs.path(temp, 'copied.txt');
+    const to = fs.path(temp, 'pasted.txt');
+
+    await from.writeText('hello');
+    await from.moveTo(to);
+
+    expect(await from.exists()).toBeFalsy();
+    expect(await to.readText()).toBe('hello');
+
     await to.remove();
   });
 });

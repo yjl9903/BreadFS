@@ -36,9 +36,11 @@
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
-    "@breadfs/core": "workspace:*"
+    "@breadfs/core": "workspace:*",
+    "fs-extra": "^11.1.1"
   },
   "devDependencies": {
+    "@types/fs-extra": "^11.0.2",
     "vitest": "^0.34.4"
   },
   "engines": {

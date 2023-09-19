@@ -11,7 +11,9 @@ import {
   WriteStreamOptions,
   ReadFileOptions,
   WriteFileOptions,
-  EncodingOptions
+  EncodingOptions,
+  CopyOptions,
+  MoveOptions
 } from './provider';
 import { BreadFSError } from './error';
 
@@ -152,18 +154,50 @@ export class BreadFS {
     );
   }
 
-  public async copy(src: string | Path, dst: string | Path): Promise<void> {
+  public async copy(
+    src: string | Path,
+    dst: string | Path,
+    options: CopyOptions = {}
+  ): Promise<void> {
     return this.runAsync(() =>
       this.matchFS(
         src,
         async (src) => {
           const dstPath = typeof dst === 'string' ? dst : dst.path;
-          if (this.provider.copyFile && (typeof dst === 'string' || this === dst.fs)) {
-            // Copy in the same fs and copyFile is provided
-            await this.provider.copyFile(src, dstPath);
+          if (this.provider.copy && (typeof dst === 'string' || this === dst.fs)) {
+            // Copy in the same fs and copy is provided
+            await this.provider.copy(src, dstPath, options);
             return;
           }
+
           // Use stream to implement copy
+          const read = this.createReadStream(src);
+          const write =
+            typeof dst === 'string' ? this.createWriteStream(dst) : dst.fs.createWriteStream(dst);
+          await read.pipeTo(write);
+        },
+        (src) => src.fs.copy(src, dst)
+      )
+    );
+  }
+
+  public async move(
+    src: string | Path,
+    dst: string | Path,
+    options: MoveOptions = {}
+  ): Promise<void> {
+    return this.runAsync(() =>
+      this.matchFS(
+        src,
+        async (src) => {
+          const dstPath = typeof dst === 'string' ? dst : dst.path;
+          if (this.provider.move && (typeof dst === 'string' || this === dst.fs)) {
+            // Copy in the same fs and move is provided
+            await this.provider.move(src, dstPath, options);
+            return;
+          }
+
+          // Use stream to implement move
           const read = this.createReadStream(src);
           const write =
             typeof dst === 'string' ? this.createWriteStream(dst) : dst.fs.createWriteStream(dst);
@@ -317,8 +351,12 @@ export class Path {
     return this._fs.writeText(this._path, content, options);
   }
 
-  public async copyTo(dst: string | Path) {
-    return this._fs.copy(this, dst);
+  public async copyTo(dst: string | Path, options: CopyOptions = {}) {
+    return this._fs.copy(this, dst, options);
+  }
+
+  public async moveTo(dst: string | Path, options: MoveOptions = {}) {
+    return this._fs.move(this, dst, options);
   }
 
   public async remove(options: RmOptions = {}): Promise<void> {
