@@ -1,9 +1,3 @@
-export interface StreamOptions {}
-
-export interface ReadStreamOptions extends StreamOptions {}
-
-export interface WriteStreamOptions extends StreamOptions {}
-
 export type BufferEncoding =
   | 'ascii'
   | 'utf8'
@@ -20,6 +14,14 @@ export type BufferEncoding =
 export interface EncodingOptions {
   encoding?: BufferEncoding;
 }
+
+export interface StreamOptions {
+  encoding?: BufferEncoding;
+}
+
+export interface ReadStreamOptions extends StreamOptions {}
+
+export interface WriteStreamOptions extends StreamOptions {}
 
 export interface ReadFileOptions {}
 
@@ -134,9 +136,11 @@ export interface ListOptions {
 export interface FileStat {
   size: number | bigint | undefined;
 
-  isDirectory: boolean;
+  isFile: () => boolean;
 
-  isFile: boolean;
+  isDirectory: () => boolean;
+
+  isSymbolicLink: () => boolean;
 
   mtime: Date | undefined;
 

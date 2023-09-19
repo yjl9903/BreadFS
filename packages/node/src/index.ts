@@ -15,7 +15,9 @@ import {
   ReadFileOptions,
   EncodingOptions,
   CopyOptions,
-  MoveOptions
+  MoveOptions,
+  ReadStreamOptions,
+  WriteStreamOptions
 } from '@breadfs/core';
 
 // @ts-ignore
@@ -26,13 +28,13 @@ Path.prototype[inspect.custom] = function () {
 export class NodeProvider implements BreadFSProvider {
   public readonly name = 'node';
 
-  public createReadStream(path: string) {
-    const stream = createReadStream(path);
+  public createReadStream(path: string, options: ReadStreamOptions) {
+    const stream = createReadStream(path, options);
     return Readable.toWeb(stream) as ReadableStream<Uint8Array>;
   }
 
-  public createWriteStream(path: string) {
-    const stream = createWriteStream(path);
+  public createWriteStream(path: string, options: WriteStreamOptions) {
+    const stream = createWriteStream(path, options);
     return Writable.toWeb(stream) as WritableStream<Uint8Array>;
   }
 
@@ -82,8 +84,9 @@ export class NodeProvider implements BreadFSProvider {
 
     return {
       size: stat.size,
-      isFile: stat.isFile(),
-      isDirectory: stat.isDirectory(),
+      isFile: () => stat.isFile(),
+      isDirectory: () => stat.isDirectory(),
+      isSymbolicLink: () => stat.isSymbolicLink(),
       mtime: stat.mtime,
       birthtime: stat.birthtime
     };

@@ -171,10 +171,18 @@ export class BreadFS {
           }
 
           // Use stream to implement copy
-          const read = this.createReadStream(src);
-          const write =
-            typeof dst === 'string' ? this.createWriteStream(dst) : dst.fs.createWriteStream(dst);
-          await read.pipeTo(write);
+          const srcStat = await this.stat(src);
+          if (srcStat.isFile()) {
+            const read = this.createReadStream(src);
+            const write =
+              typeof dst === 'string' ? this.createWriteStream(dst) : dst.fs.createWriteStream(dst);
+            await read.pipeTo(write);
+          } else if (srcStat.isDirectory()) {
+            // TODO
+            throw new Error('Not support copy directory');
+          } else {
+            throw new Error('Not support copy other file types');
+          }
         },
         (src) => src.fs.copy(src, dst)
       )
@@ -197,11 +205,20 @@ export class BreadFS {
             return;
           }
 
-          // Use stream to implement move
-          const read = this.createReadStream(src);
-          const write =
-            typeof dst === 'string' ? this.createWriteStream(dst) : dst.fs.createWriteStream(dst);
-          await read.pipeTo(write);
+          const srcStat = await this.stat(src);
+          if (srcStat.isFile()) {
+            // Use stream to implement move file
+            const read = this.createReadStream(src);
+            const write =
+              typeof dst === 'string' ? this.createWriteStream(dst) : dst.fs.createWriteStream(dst);
+            await read.pipeTo(write);
+            await this.remove(src);
+          } else if (srcStat.isDirectory()) {
+            // TODO
+            throw new Error('Not support move directory');
+          } else {
+            throw new Error('Not support move other file types');
+          }
         },
         (src) => src.fs.copy(src, dst)
       )
@@ -324,11 +341,15 @@ export class Path {
   }
 
   public async isFile(): Promise<boolean> {
-    return (await this.stat()).isFile;
+    return (await this.stat()).isFile();
   }
 
   public async isDirectory(): Promise<boolean> {
-    return (await this.stat()).isDirectory;
+    return (await this.stat()).isDirectory();
+  }
+
+  public async isSymbolicLink(): Promise<boolean> {
+    return (await this.stat()).isSymbolicLink();
   }
 
   public async exists(): Promise<boolean> {

@@ -56,8 +56,9 @@ export class WebDAVProvider implements BreadFSProvider {
 
     return {
       size: stat.size,
-      isFile: stat.type === 'file',
-      isDirectory: stat.type === 'directory',
+      isFile: () => stat.type === 'file',
+      isDirectory: () => stat.type === 'directory',
+      isSymbolicLink: () => false,
       mtime: new Date(stat.lastmod),
       birthtime: undefined
     };
