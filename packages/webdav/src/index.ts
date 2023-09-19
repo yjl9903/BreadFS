@@ -1,3 +1,4 @@
+import { createWriteStream } from 'node:fs';
 import { Readable, Writable } from 'node:stream';
 import {
   createClient,
@@ -6,7 +7,14 @@ import {
   FileStat as WebDAVFileStat
 } from 'webdav';
 
-import { BreadFSProvider, FileStat, ListOptions, MakeDirectoryOptions } from '@breadfs/core';
+import {
+  BreadFSProvider,
+  FileStat,
+  ListOptions,
+  MakeDirectoryOptions,
+  ReadFileOptions,
+  WriteFileOptions
+} from '@breadfs/core';
 
 export { AuthType, Headers, OAuthToken } from 'webdav';
 
@@ -39,12 +47,17 @@ export class WebDAVProvider implements BreadFSProvider {
     await this.client.createDirectory(path, options);
   }
 
-  public async readFile(path: string): Promise<Uint8Array> {
-    throw new Error('Method not implemented.');
+  public async readFile(path: string, options: ReadFileOptions): Promise<Uint8Array> {
+    const content = (await this.client.getFileContents(path, { format: 'binary' })) as Buffer;
+    return content;
   }
 
-  public async writeFile(path: string, stream: ReadableStream<any>): Promise<void> {
-    throw new Error('Method not implemented.');
+  public async writeFile(
+    path: string,
+    stream: ReadableStream<Uint8Array>,
+    options: WriteFileOptions
+  ): Promise<void> {
+    await stream.pipeTo(this.createWriteStream(path));
   }
 
   public async remove(path: string): Promise<void> {
@@ -68,7 +81,7 @@ export class WebDAVProvider implements BreadFSProvider {
     return await this.client.exists(path);
   }
 
-  public async list(path: string, options: ListOptions = {}): Promise<string[]> {
+  public async list(path: string, options: ListOptions): Promise<string[]> {
     const ps = (await this.client.getDirectoryContents(path, {
       deep: options.recursive
     })) as WebDAVFileStat[];
