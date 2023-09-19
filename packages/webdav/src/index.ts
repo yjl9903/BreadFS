@@ -33,9 +33,7 @@ export class WebDAVProvider implements BreadFSProvider {
 
   public createReadStream(path: string) {
     const stream = this.client.createReadStream(path);
-    return Readable.toWeb(stream) as ReadableStream<Uint8Array> & {
-      [Symbol.asyncIterator](): AsyncIterator<Uint8Array>;
-    };
+    return Readable.toWeb(stream) as ReadableStream<Uint8Array>;
   }
 
   public createWriteStream(path: string) {
