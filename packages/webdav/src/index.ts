@@ -48,16 +48,16 @@ export class WebDAVProvider implements BreadFSProvider {
   }
 
   public async readFile(path: string, options: ReadFileOptions): Promise<Uint8Array> {
-    const content = (await this.client.getFileContents(path, { format: 'binary' })) as Buffer;
+    const content = (await this.client.getFileContents(path, { format: 'binary' })) as Uint8Array;
     return content;
   }
 
   public async writeFile(
     path: string,
-    stream: ReadableStream<Uint8Array>,
+    buffer: Uint8Array,
     options: WriteFileOptions
   ): Promise<void> {
-    await stream.pipeTo(this.createWriteStream(path));
+    await this.client.putFileContents(path, buffer, { overwrite: true });
   }
 
   public async copy(src: string, dst: string, options: CopyOptions) {

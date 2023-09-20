@@ -104,14 +104,14 @@ export class BreadFS {
 
   public async writeFile(
     path: string | Path,
-    stream: ReadableStream<Uint8Array>,
+    buffer: Uint8Array,
     options: WriteFileOptions = {}
   ): Promise<void> {
     return this.runAsync(() =>
       this.matchFS(
         path,
-        (p) => this.provider.writeFile(p, stream, options),
-        (p) => p.fs.writeFile(p, stream, options)
+        (p) => this.provider.writeFile(p, buffer, options),
+        (p) => p.fs.writeFile(p, buffer, options)
       )
     );
   }
@@ -132,13 +132,8 @@ export class BreadFS {
         );
       } else {
         // const encoding = typeof options === 'string' ? options : options.encoding;
-        const stream = new ReadableStream({
-          start(controller) {
-            controller.enqueue(content);
-            controller.close();
-          }
-        }).pipeThrough(new TextEncoderStream());
-        await this.writeFile(path, stream);
+        const buffer = new TextEncoder().encode(content);
+        await this.writeFile(path, buffer);
       }
     });
   }
@@ -170,13 +165,16 @@ export class BreadFS {
             return;
           }
 
-          // Use stream to implement copy
           const srcStat = await this.stat(src);
           if (srcStat.isFile()) {
-            const read = this.createReadStream(src);
-            const write =
-              typeof dst === 'string' ? this.createWriteStream(dst) : dst.fs.createWriteStream(dst);
-            await read.pipeTo(write);
+            // const read = this.createReadStream(src);
+            // const write =
+            //   typeof dst === 'string' ? this.createWriteStream(dst) : dst.fs.createWriteStream(dst);
+            // await read.pipeTo(write);
+
+            // Use readFile and writeFile to implement copy
+            const contents = await this.readFile(src);
+            await this.writeFile(dst, contents, {});
           } else if (srcStat.isDirectory()) {
             // TODO
             throw new Error('Not support copy directory');
@@ -207,11 +205,15 @@ export class BreadFS {
 
           const srcStat = await this.stat(src);
           if (srcStat.isFile()) {
-            // Use stream to implement move file
-            const read = this.createReadStream(src);
-            const write =
-              typeof dst === 'string' ? this.createWriteStream(dst) : dst.fs.createWriteStream(dst);
-            await read.pipeTo(write);
+            // const read = this.createReadStream(src);
+            // const write =
+            //   typeof dst === 'string' ? this.createWriteStream(dst) : dst.fs.createWriteStream(dst);
+            // await read.pipeTo(write);
+            // await this.remove(src);
+
+            // Use readFile and writeFile to implement move file
+            const contents = await this.readFile(src);
+            await this.writeFile(dst, contents, {});
             await this.remove(src);
           } else if (srcStat.isDirectory()) {
             // TODO
@@ -372,8 +374,8 @@ export class Path {
     return this._fs.readText(this._path, options);
   }
 
-  public async writeFile(stream: ReadableStream, options: WriteFileOptions = {}) {
-    return this._fs.writeFile(this._path, stream, options);
+  public async writeFile(buffer: Uint8Array, options: WriteFileOptions = {}) {
+    return this._fs.writeFile(this._path, buffer, options);
   }
 
   public async writeText(content: string, options: BufferEncoding | EncodingOptions = 'utf-8') {
