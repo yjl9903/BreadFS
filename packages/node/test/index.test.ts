@@ -35,7 +35,7 @@ describe('File System', () => {
 
   it('should list', async () => {
     const monorepo = fs.path('../');
-    expect((await monorepo.list()).map((p) => p.toString())).toMatchInlineSnapshot(`
+    expect((await monorepo.list()).map((p) => p.toString()).sort()).toMatchInlineSnapshot(`
       [
         "../breadfs",
         "../core",

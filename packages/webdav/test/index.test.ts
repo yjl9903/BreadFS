@@ -78,7 +78,7 @@ describe('webdav', () => {
       ]
     `);
 
-    expect((await fs.path('/sub1').list()).map((p) => p.path)).toMatchInlineSnapshot(`
+    expect((await fs.path('/sub1').list()).map((p) => p.path).sort()).toMatchInlineSnapshot(`
       [
         "/sub1/irrelephant.jpg",
         "/sub1/ยากจน #1.txt",
