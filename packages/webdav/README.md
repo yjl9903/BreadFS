@@ -12,15 +12,14 @@ npm i breadfs @breadfs/webdav
 ## Usage
 
 ```ts
-import { BreadFS, WebDAVProvider, AuthType } from 'breadfs/webdav'
+import { BreadFS, WebDAVProvider } from 'breadfs/webdav'
 
-const nfs = BreadFS.of(WebDAVProvider.of("https://some-server.org", {
-    authType: AuthType.Digest,
+const wfs = BreadFS.of(WebDAVProvider.of("https://some-server.org", {
     username: "user",
     password: "pass"
 }))
 
-await nfs.path('/test.txt').readText()
+await wfs.path('/test.txt').readText()
 ```
 
 ## License

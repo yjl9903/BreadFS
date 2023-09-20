@@ -24,9 +24,7 @@ npm i breadfs
 ## Usage
 
 ```ts
-import { BreadFS, NodeFS } from 'breadfs/node'
-
-const nfs = BreadFS.of(NodeFS)
+import { fs as nfs } from 'breadfs/node'
 
 const bin = nfs.path('/bin')
 

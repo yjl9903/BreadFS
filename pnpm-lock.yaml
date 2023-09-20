@@ -38,10 +38,10 @@ importers:
       '@breadfs/core':
         specifier: workspace:*
         version: link:../core
-    optionalDependencies:
       '@breadfs/node':
         specifier: workspace:*
         version: link:../node
+    optionalDependencies:
       '@breadfs/webdav':
         specifier: workspace:*
         version: link:../webdav

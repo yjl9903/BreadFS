@@ -61,13 +61,13 @@
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
-    "@breadfs/core": "workspace:*"
+    "@breadfs/core": "workspace:*",
+    "@breadfs/node": "workspace:*"
   },
   "devDependencies": {
     "vitest": "^0.34.4"
   },
   "optionalDependencies": {
-    "@breadfs/node": "workspace:*",
     "@breadfs/webdav": "workspace:*"
   },
   "engines": {

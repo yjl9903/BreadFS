@@ -12,7 +12,8 @@ npm i breadfs @breadfs/node
 ## Usage
 
 ```ts
-import { BreadFS, NodeFS } from 'breadfs/node'
+import { NodeFS } from '@breadfs/node'
+import { BreadFS } from '@breadfs/core'
 
 const nfs = BreadFS.of(NodeFS)
 
