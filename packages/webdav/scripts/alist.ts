@@ -13,4 +13,5 @@ const alist = BreadFS.of(
 
 const contents = await local.path('README.md').readFile();
 await alist.path('/aliyundriver/README.md').writeFile(contents);
-await alist.path('/aliyundriver/README.md').readFile();
+console.log(await alist.path('/aliyundriver/README.md').readText());
+await alist.path('/aliyundriver/README.md').remove();
