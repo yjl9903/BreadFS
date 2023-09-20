@@ -315,6 +315,10 @@ export class Path {
     return pathe.dirname(this._path);
   }
 
+  public get extname(): string {
+    return pathe.extname(this._path);
+  }
+
   public join(...pieces: string[]): Path {
     return new Path(this._fs, pathe.join(this._path, ...pieces));
   }
@@ -333,6 +337,10 @@ export class Path {
   }
 
   public async mkdir(options: MakeDirectoryOptions = {}): Promise<void> {
+    await this._fs.mkdir(this._path, options);
+  }
+
+  public async ensureDir(options: MakeDirectoryOptions = {}): Promise<void> {
     await this._fs.mkdir(this._path, options);
   }
 
