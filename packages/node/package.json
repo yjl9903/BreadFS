@@ -48,7 +48,7 @@
   },
   "devDependencies": {
     "@types/fs-extra": "^11.0.2",
-    "vitest": "^0.34.4"
+    "vitest": "^0.34.5"
   },
   "engines": {
     "node": ">=v20.6.1"
