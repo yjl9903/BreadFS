@@ -23,6 +23,8 @@ npm i breadfs
 
 ## Usage
 
+### Node
+
 ```ts
 import { fs as nfs } from 'breadfs/node'
 
@@ -33,6 +35,19 @@ await bin.join('node').stat()
 await nfs.path('/home/.bashrc').readFile()
 await nfs.path('/home/.bashrc').readText()
 await nfs.path('/home/test.txt').writeText('This is used for testing')
+```
+
+### WebDAV
+
+```ts
+import { WebDAVFS } from 'breadfs/webdav'
+
+const wfs = WebDAVFS.make("https://some-server.org", {
+    username: "user",
+    password: "pass"
+})
+
+await wfs.path('/test.txt').readText()
 ```
 
 ## License

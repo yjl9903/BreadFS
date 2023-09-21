@@ -17,8 +17,9 @@ import {
   WriteFileOptions
 } from '@breadfs/core';
 
-export { AuthType } from 'webdav';
-export type { Headers, OAuthToken } from 'webdav';
+export type { Headers, OAuthToken, WebDAVClient, WebDAVClientOptions } from 'webdav';
+
+export { createClient, AuthType } from 'webdav';
 
 export class WebDAVProvider implements BreadFSProvider {
   public readonly name = 'webdav';

@@ -12,12 +12,12 @@ npm i breadfs @breadfs/webdav
 ## Usage
 
 ```ts
-import { BreadFS, WebDAVProvider } from 'breadfs/webdav'
+import { WebDAVFS } from 'breadfs/webdav'
 
-const wfs = BreadFS.of(WebDAVProvider.of("https://some-server.org", {
+const wfs = WebDAVFS.make("https://some-server.org", {
     username: "user",
     password: "pass"
-}))
+})
 
 await wfs.path('/test.txt').readText()
 ```
