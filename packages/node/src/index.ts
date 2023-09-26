@@ -61,7 +61,7 @@ export class NodeProvider implements BreadFSProvider {
     stream: Uint8Array,
     options: WriteFileOptions
   ): Promise<void> {
-    await fs.writeFile(path, stream, {});
+    await fs.writeFile(path, stream, { encoding: options.encoding });
   }
 
   public async writeText(path: string, content: string, options: EncodingOptions): Promise<void> {

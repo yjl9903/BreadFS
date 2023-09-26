@@ -26,10 +26,14 @@ export interface WriteStreamOptions extends StreamOptions {}
 export type ProgressHandler = (payload: { current: number; total: number }) => void;
 
 export interface ReadFileOptions {
+  encoding?: BufferEncoding;
+
   onProgress?: ProgressHandler;
 }
 
 export interface WriteFileOptions {
+  encoding?: BufferEncoding;
+
   onProgress?: ProgressHandler;
 }
 

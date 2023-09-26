@@ -85,16 +85,16 @@ export class BreadFS {
     options: BufferEncoding | EncodingOptions = 'utf-8'
   ): Promise<string> {
     return this.runAsync(async () => {
+      const resolved: EncodingOptions =
+        typeof options === 'string' ? { encoding: options } : options;
       if (this.provider.readText) {
-        const resolved: EncodingOptions =
-          typeof options === 'string' ? { encoding: options } : options;
         return this.matchFS(
           path,
           (p) => this.provider.readText!(p, resolved),
           (p) => p.fs.readText!(p, resolved)
         );
       } else {
-        const content = await this.readFile(path, options);
+        const content = await this.readFile(path, resolved);
         const encoding = typeof options === 'string' ? options : options.encoding;
         const decoder = new TextDecoder(encoding);
         return decoder.decode(content);
