@@ -8,7 +8,7 @@ import {
   Path,
   BreadFSProvider,
   FileStat,
-  RmOptions,
+  RemoveOptions,
   MakeDirectoryOptions,
   ListOptions,
   StatOptions,
@@ -68,7 +68,7 @@ export class NodeProvider implements BreadFSProvider {
     await fs.writeFile(path, content, options);
   }
 
-  public async remove(path: string, options: RmOptions): Promise<void> {
+  public async remove(path: string, options: RemoveOptions): Promise<void> {
     await fs.rm(path, options);
   }
 

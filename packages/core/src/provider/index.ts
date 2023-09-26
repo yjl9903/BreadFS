@@ -1,7 +1,7 @@
 import type {
   FileStat,
   MakeDirectoryOptions,
-  RmOptions,
+  RemoveOptions,
   ListOptions,
   StatOptions,
   ReadStreamOptions,
@@ -36,7 +36,7 @@ export interface BreadFSProvider {
 
   move?: (src: string, dst: string, options: MoveOptions) => Promise<void>;
 
-  remove: (path: string, options: RmOptions) => Promise<void>;
+  remove: (path: string, options: RemoveOptions) => Promise<void>;
 
   stat: (path: string, options: StatOptions) => Promise<FileStat>;
 

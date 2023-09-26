@@ -4,7 +4,7 @@ import {
   FileStat,
   BreadFSProvider,
   ListOptions,
-  RmOptions,
+  RemoveOptions,
   StatOptions,
   MakeDirectoryOptions,
   ReadStreamOptions,
@@ -138,8 +138,8 @@ export class BreadFS {
     });
   }
 
-  public async remove(path: string | Path, options: RmOptions = {}): Promise<void> {
-    const resolved: RmOptions = { recursive: true, force: true, ...options };
+  public async remove(path: string | Path, options: RemoveOptions = {}): Promise<void> {
+    const resolved: RemoveOptions = { recursive: true, force: true, ...options };
     return this.runAsync(() =>
       this.matchFS(
         path,
@@ -390,7 +390,7 @@ export class Path {
     return this._fs.move(this, dst, options);
   }
 
-  public async remove(options: RmOptions = {}): Promise<void> {
+  public async remove(options: RemoveOptions = {}): Promise<void> {
     await this._fs.remove(this._path, options);
   }
 

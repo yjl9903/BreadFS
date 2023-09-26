@@ -42,7 +42,7 @@ export interface MakeDirectoryOptions {
   mode?: number | string | undefined;
 }
 
-export interface RmOptions {
+export interface RemoveOptions {
   /**
    * When `true`, exceptions will be ignored if `path` does not exist.
    * @default true
@@ -107,6 +107,23 @@ export interface CopyOptions {
    * Can also return a `Promise` that resolves to `true` or `false` (or pass in an `async` function).
    */
   // filter?: CopyFilterSync | CopyFilterAsync | undefined;
+
+  /**
+   * Fallback copy
+   */
+  fallback?: {
+    file?: {
+      read?: ReadFileOptions;
+
+      write?: WriteFileOptions;
+    };
+
+    stream?: {
+      read?: ReadStreamOptions;
+
+      write?: WriteStreamOptions;
+    };
+  };
 }
 
 export interface MoveOptions {
@@ -121,6 +138,25 @@ export interface MoveOptions {
    * @default false
    */
   dereference?: boolean | undefined;
+
+  /**
+   * Fallback move
+   */
+  fallback?: {
+    file?: {
+      read?: ReadFileOptions;
+
+      write?: WriteFileOptions;
+
+      remove?: RemoveOptions;
+    };
+
+    stream?: {
+      read?: ReadStreamOptions;
+
+      write?: WriteStreamOptions;
+    };
+  };
 }
 
 export interface StatOptions {
