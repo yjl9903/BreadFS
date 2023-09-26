@@ -49,7 +49,14 @@ export class WebDAVProvider implements BreadFSProvider {
   }
 
   public async readFile(path: string, options: ReadFileOptions): Promise<Uint8Array> {
-    const content = (await this.client.getFileContents(path, { format: 'binary' })) as Uint8Array;
+    const content = (await this.client.getFileContents(path, {
+      format: 'binary',
+      onDownloadProgress: options.onProgress
+        ? (ev) => {
+            options.onProgress?.({ current: ev.loaded, total: ev.total });
+          }
+        : undefined
+    })) as Uint8Array;
     return content;
   }
 
@@ -58,7 +65,14 @@ export class WebDAVProvider implements BreadFSProvider {
     buffer: Uint8Array,
     options: WriteFileOptions
   ): Promise<void> {
-    await this.client.putFileContents(path, buffer, { overwrite: true });
+    await this.client.putFileContents(path, buffer, {
+      overwrite: true,
+      onUploadProgress: options.onProgress
+        ? (ev) => {
+            options.onProgress?.({ current: ev.loaded, total: ev.total });
+          }
+        : undefined
+    });
   }
 
   public async copy(src: string, dst: string, options: CopyOptions) {

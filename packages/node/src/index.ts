@@ -44,7 +44,7 @@ export class NodeProvider implements BreadFSProvider {
   }
 
   public async readFile(path: string, options: ReadFileOptions): Promise<Uint8Array> {
-    return await fs.readFile(path, options);
+    return await fs.readFile(path, {});
   }
 
   public async readText(path: string, options: EncodingOptions): Promise<string> {
@@ -61,7 +61,7 @@ export class NodeProvider implements BreadFSProvider {
     stream: Uint8Array,
     options: WriteFileOptions
   ): Promise<void> {
-    await fs.writeFile(path, stream, options);
+    await fs.writeFile(path, stream, {});
   }
 
   public async writeText(path: string, content: string, options: EncodingOptions): Promise<void> {

@@ -23,9 +23,15 @@ export interface ReadStreamOptions extends StreamOptions {}
 
 export interface WriteStreamOptions extends StreamOptions {}
 
-export interface ReadFileOptions {}
+export type ProgressHandler = (payload: { current: number; total: number }) => void;
 
-export interface WriteFileOptions {}
+export interface ReadFileOptions {
+  onProgress?: ProgressHandler;
+}
+
+export interface WriteFileOptions {
+  onProgress?: ProgressHandler;
+}
 
 export interface MakeDirectoryOptions {
   /**
