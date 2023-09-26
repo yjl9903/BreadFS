@@ -1,6 +1,6 @@
 {
   "name": "@breadfs/core",
-  "version": "0.0.6",
+  "version": "0.0.7",
   "description": "Unified File System Abstraction",
   "keywords": [
     "fs",
