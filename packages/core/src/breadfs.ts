@@ -167,14 +167,19 @@ export class BreadFS {
 
           const srcStat = await this.stat(src);
           if (srcStat.isFile()) {
-            // const read = this.createReadStream(src);
-            // const write =
-            //   typeof dst === 'string' ? this.createWriteStream(dst) : dst.fs.createWriteStream(dst);
-            // await read.pipeTo(write);
-
-            // Use readFile and writeFile to implement copy
-            const contents = await this.readFile(src);
-            await this.writeFile(dst, contents, {});
+            if (options.fallback?.stream) {
+              // Use stream to implement copy
+              const read = this.createReadStream(src, options.fallback.stream.read);
+              const write =
+                typeof dst === 'string'
+                  ? this.createWriteStream(dst, options.fallback.stream.write)
+                  : dst.fs.createWriteStream(dst, options.fallback.stream.write);
+              await read.pipeTo(write);
+            } else {
+              // Use readFile and writeFile to implement copy
+              const contents = await this.readFile(src, options.fallback?.file?.read);
+              await this.writeFile(dst, contents, options.fallback?.file?.write);
+            }
           } else if (srcStat.isDirectory()) {
             // TODO
             throw new Error('Not support copy directory');
@@ -205,16 +210,21 @@ export class BreadFS {
 
           const srcStat = await this.stat(src);
           if (srcStat.isFile()) {
-            // const read = this.createReadStream(src);
-            // const write =
-            //   typeof dst === 'string' ? this.createWriteStream(dst) : dst.fs.createWriteStream(dst);
-            // await read.pipeTo(write);
-            // await this.remove(src);
-
-            // Use readFile and writeFile to implement move file
-            const contents = await this.readFile(src);
-            await this.writeFile(dst, contents, {});
-            await this.remove(src);
+            if (options.fallback?.stream) {
+              // Use stream to implement move file
+              const read = this.createReadStream(src, options.fallback.stream.read);
+              const write =
+                typeof dst === 'string'
+                  ? this.createWriteStream(dst, options.fallback.stream.write)
+                  : dst.fs.createWriteStream(dst, options.fallback.stream.write);
+              await read.pipeTo(write);
+              await this.remove(src, options.fallback.file?.remove);
+            } else {
+              // Use readFile and writeFile to implement move file
+              const contents = await this.readFile(src, options.fallback?.file?.read);
+              await this.writeFile(dst, contents, options.fallback?.file?.write);
+              await this.remove(src, options.fallback?.file?.remove);
+            }
           } else if (srcStat.isDirectory()) {
             // TODO
             throw new Error('Not support move directory');
