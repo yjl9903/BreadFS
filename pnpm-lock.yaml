@@ -86,8 +86,8 @@ importers:
         version: 5.3.0
     devDependencies:
       '@breadc/death':
-        specifier: 0.9.7-beta.0
-        version: 0.9.7-beta.0
+        specifier: 0.9.7
+        version: 0.9.7
       '@breadfs/node':
         specifier: workspace:*
         version: link:../node
@@ -308,8 +308,8 @@ packages:
       to-fast-properties: 2.0.0
     dev: true
 
-  /@breadc/death@0.9.7-beta.0:
-    resolution: {integrity: sha512-1ZyrQBXpsHg4vhVTUt1uZxr3N7oPCNQ/SEBqaMpGtUSvzJsKZjaNUvEjtpidMSeVf2Ccoyspvd4Af1W1X+CjXQ==}
+  /@breadc/death@0.9.7:
+    resolution: {integrity: sha512-eIWHb5Hrnd5j/RLSgbY1mtRPECMSjRbqlxZmlG+mgNi0h0YNieaS86EYsIHxnPT+J682N/OE7LoHSVDTRmp6jw==}
     dev: true
 
   /@buttercup/fetch@0.1.2:
