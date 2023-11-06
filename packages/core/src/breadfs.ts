@@ -85,6 +85,7 @@ export class BreadFS {
     options: BufferEncoding | EncodingOptions = 'utf-8'
   ): Promise<string> {
     return this.runAsync(async () => {
+      // @ts-expect-error
       const resolved: EncodingOptions =
         typeof options === 'string' ? { encoding: options } : options;
       if (this.provider.readText) {
@@ -123,6 +124,7 @@ export class BreadFS {
   ): Promise<void> {
     await this.runAsync(async () => {
       if (this.provider.writeText) {
+        // @ts-expect-error
         const resolved: EncodingOptions =
           typeof options === 'string' ? { encoding: options } : options;
         await this.matchFS(
