@@ -9,8 +9,8 @@ importers:
   .:
     devDependencies:
       '@types/node':
-        specifier: ^20.9.1
-        version: 20.9.1
+        specifier: ^20.9.2
+        version: 20.9.2
       bumpp:
         specifier: latest
         version: 9.2.0
@@ -25,7 +25,7 @@ importers:
         version: 2.0.0(typescript@5.2.2)
       vite:
         specifier: ^5.0.0
-        version: 5.0.0(@types/node@20.9.1)
+        version: 5.0.0(@types/node@20.9.2)
       vite-tsconfig-paths:
         specifier: ^4.2.1
         version: 4.2.1(typescript@5.2.2)(vite@5.0.0)
@@ -997,7 +997,7 @@ packages:
   /@types/jsonfile@6.1.4:
     resolution: {integrity: sha512-D5qGUYwjvnNNextdU59/+fI+spnwtTFmyQP0h+PfIOSkNfpU6AOICUOkm4i0OnSk+NyjdPJrxCDro0sJsWlRpQ==}
     dependencies:
-      '@types/node': 20.9.1
+      '@types/node': 20.9.2
     dev: true
 
   /@types/node@20.9.0:
@@ -1006,8 +1006,8 @@ packages:
       undici-types: 5.26.5
     dev: true
 
-  /@types/node@20.9.1:
-    resolution: {integrity: sha512-HhmzZh5LSJNS5O8jQKpJ/3ZcrrlG6L70hpGqMIAoM9YVD0YBRNWYsfwcXq8VnSjlNpCpgLzMXdiPo+dxcvSmiA==}
+  /@types/node@20.9.2:
+    resolution: {integrity: sha512-WHZXKFCEyIUJzAwh3NyyTHYSR35SevJ6mZ1nWwJafKtiQbqRTIKSRcw3Ma3acqgsent3RRDqeVwpHntMk+9irg==}
     dependencies:
       undici-types: 5.26.5
     dev: true
@@ -2439,7 +2439,7 @@ packages:
       debug: 4.3.4
       globrex: 0.1.2
       tsconfck: 2.1.2(typescript@5.2.2)
-      vite: 5.0.0(@types/node@20.9.1)
+      vite: 5.0.0(@types/node@20.9.2)
     transitivePeerDependencies:
       - supports-color
       - typescript
@@ -2517,7 +2517,7 @@ packages:
       fsevents: 2.3.3
     dev: true
 
-  /vite@5.0.0(@types/node@20.9.1):
+  /vite@5.0.0(@types/node@20.9.2):
     resolution: {integrity: sha512-ESJVM59mdyGpsiNAeHQOR/0fqNoOyWPYesFto8FFZugfmhdHx8Fzd8sF3Q/xkVhZsyOxHfdM7ieiVAorI9RjFw==}
     engines: {node: ^18.0.0 || >=20.0.0}
     hasBin: true
@@ -2545,7 +2545,7 @@ packages:
       terser:
         optional: true
     dependencies:
-      '@types/node': 20.9.1
+      '@types/node': 20.9.2
       esbuild: 0.19.5
       postcss: 8.4.31
       rollup: 4.5.0
