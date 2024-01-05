@@ -64,9 +64,6 @@
     "@breadfs/core": "workspace:*",
     "@breadfs/node": "workspace:*"
   },
-  "devDependencies": {
-    "vitest": "^0.34.6"
-  },
   "optionalDependencies": {
     "@breadfs/webdav": "workspace:*"
   },

@@ -47,7 +47,7 @@ describe('webdav', () => {
       '"Some short notes."'
     );
     expect((await fs.path('/format.json').readText()).trim()).toMatchInlineSnapshot(
-      '"{\\"test\\":true}"'
+      `"{"test":true}"`
     );
   });
 
