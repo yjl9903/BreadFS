@@ -2,7 +2,7 @@ import { inspect } from 'node:util';
 import { Readable, Writable } from 'node:stream';
 import { promises as fs, createReadStream, createWriteStream } from 'node:fs';
 
-import { copy, move } from 'fs-extra';
+import { copy, move, rm } from 'fs-extra';
 
 import {
   Path,
@@ -69,7 +69,7 @@ export class NodeProvider implements BreadFSProvider {
   }
 
   public async remove(path: string, options: RemoveOptions): Promise<void> {
-    await fs.rm(path, options);
+    await rm(path, options);
   }
 
   public async copy(src: string, dst: string, options: CopyOptions): Promise<void> {
