@@ -30,7 +30,11 @@ export class BreadFS {
 
   public path(root: string | Path, ...paths: string[]): Path {
     const ps = pathe.join(typeof root === 'string' ? root : root.path, ...paths);
-    return new Path(this, ps);
+    if (typeof root === 'string') {
+      return new Path(this, ps);
+    } else {
+      return new Path(root.fs, ps);
+    }
   }
 
   public createReadStream(
