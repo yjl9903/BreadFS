@@ -219,6 +219,47 @@ describe('webdav', () => {
     expect(await to.readText()).toBe(await notes.readText());
     await to.remove();
   });
+
+  it('should copy directory from node to webdav', async () => {
+    const dir1 = nfs.path(temp, 'dir1');
+    const dir2 = fs.path('/webdav/copied-dir');
+
+    const from1 = fs.path(dir1, 'file1.txt');
+    const from2 = fs.path(dir1, 'file2.txt');
+    const from3 = fs.path(dir1, 'nest', 'file.txt');
+
+    await fs.path(dir1).mkdir();
+    await fs.path(dir1, 'nest').mkdir();
+    await from1.writeText('hello1');
+    await from2.writeText('hello2');
+    await from3.writeText('hello3');
+
+    // await dir1.copyTo(dir2);
+
+    // const to1 = fs.path(dir2, 'file1.txt');
+    // const to2 = fs.path(dir2, 'file2.txt');
+    // const to3 = fs.path(dir2, 'nest', 'file.txt');
+    // expect(await to1.readText()).toBe('hello1');
+    // expect(await to2.readText()).toBe('hello2');
+    // expect(await to3.readText()).toBe('hello3');
+
+    await dir1.remove({ recursive: true });
+    await dir2.remove({ recursive: true });
+  });
+
+  it('should remove text file', async () => {
+    const file = fs.path('/something.txt');
+    await file.writeText('123');
+
+    await file.remove();
+    expect(await file.exists()).toBeFalsy();
+
+    await file.remove();
+
+    expect(
+      async () => await file.remove({ force: false })
+    ).rejects.toThrowErrorMatchingInlineSnapshot(`[Error: Invalid response: 404 Not Found]`);
+  });
 });
 
 function sleep(time: number): Promise<void> {

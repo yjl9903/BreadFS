@@ -109,7 +109,7 @@ export class BreadFS {
 
   public async writeFile(
     path: string | Path,
-    buffer: Uint8Array,
+    buffer: Buffer | Uint8Array,
     options: WriteFileOptions = {}
   ): Promise<void> {
     return this.runAsync(() =>
@@ -139,11 +139,18 @@ export class BreadFS {
       } else {
         // const encoding = typeof options === 'string' ? options : options.encoding;
         const buffer = new TextEncoder().encode(content);
-        await this.writeFile(path, buffer);
+        await this.writeFile(path, buffer.buffer as Buffer);
       }
     });
   }
 
+  /**
+   * Remove a file or a directory recursively.
+   *
+   * @param path A file or a directory
+   * @param options
+   * @returns
+   */
   public async remove(path: string | Path, options: RemoveOptions = {}): Promise<void> {
     const resolved: RemoveOptions = { recursive: true, force: true, ...options };
     return this.runAsync(() =>
@@ -155,6 +162,14 @@ export class BreadFS {
     );
   }
 
+  /**
+   * Copy a file or directory, even across file systems.
+   *
+   * @param src Note that if `src` is a directory it will move everything inside of this directory, not the entire directory itself.
+   * @param dst Note that if `src` is a file, `dst` cannot be a directory.
+   * @param options
+   * @returns
+   */
   public async copy(
     src: string | Path,
     dst: string | Path,
@@ -208,6 +223,14 @@ export class BreadFS {
     );
   }
 
+  /**
+   * Moves a file or directory, even across file systems.
+   *
+   * @param src Note that if `src` is a directory it will copy everything inside of this directory, not the entire directory itself.
+   * @param dst Note that when `src` is a file, `dest` must be a file and when `src` is a directory, `dest` must be a directory.
+   * @param options
+   * @returns
+   */
   public async move(
     src: string | Path,
     dst: string | Path,

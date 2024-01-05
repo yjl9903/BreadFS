@@ -85,7 +85,17 @@ export class WebDAVProvider implements BreadFSProvider {
   }
 
   public async remove(path: string, options: RemoveOptions): Promise<void> {
-    await this.client.deleteFile(path);
+    const force = options.force ?? true;
+    try {
+      await this.client.deleteFile(path);
+    } catch (_error) {
+      const error = _error as any;
+      if (error.status === 404 && error.response) {
+        if (!force) {
+          throw error;
+        }
+      }
+    }
   }
 
   public async stat(path: string): Promise<FileStat> {

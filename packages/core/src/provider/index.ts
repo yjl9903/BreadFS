@@ -28,7 +28,11 @@ export interface BreadFSProvider {
 
   readText?: (path: string, options: EncodingOptions) => Promise<string>;
 
-  writeFile: (path: string, buffer: Uint8Array, options: WriteFileOptions) => Promise<void>;
+  writeFile: (
+    path: string,
+    buffer: Buffer | Uint8Array,
+    options: WriteFileOptions
+  ) => Promise<void>;
 
   writeText?: (path: string, content: string, options: EncodingOptions) => Promise<void>;
 

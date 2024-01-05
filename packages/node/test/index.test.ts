@@ -111,6 +111,9 @@ describe('File System', () => {
     const to1 = fs.path(dir2, 'file1.txt');
     const to2 = fs.path(dir2, 'file2.txt');
     const to3 = fs.path(dir2, 'nest', 'file.txt');
+    expect(await from1.exists()).toBeTruthy();
+    expect(await from2.exists()).toBeTruthy();
+    expect(await from3.exists()).toBeTruthy();
     expect(await to1.readText()).toBe('hello1');
     expect(await to2.readText()).toBe('hello2');
     expect(await to3.readText()).toBe('hello3');
@@ -130,5 +133,35 @@ describe('File System', () => {
     expect(await to.readText()).toBe('hello');
 
     await to.remove();
+  });
+
+  it('should move directory', async () => {
+    const dir1 = fs.path(temp, 'dir3');
+    const dir2 = fs.path(temp, 'dir4');
+
+    const from1 = fs.path(dir1, 'file1.txt');
+    const from2 = fs.path(dir1, 'file2.txt');
+    const from3 = fs.path(dir1, 'nest', 'file.txt');
+
+    await fs.path(dir1).mkdir();
+    await fs.path(dir1, 'nest').mkdir();
+    await from1.writeText('hello1');
+    await from2.writeText('hello2');
+    await from3.writeText('hello3');
+
+    await dir1.moveTo(dir2);
+
+    const to1 = fs.path(dir2, 'file1.txt');
+    const to2 = fs.path(dir2, 'file2.txt');
+    const to3 = fs.path(dir2, 'nest', 'file.txt');
+    expect(await from1.exists()).toBeFalsy();
+    expect(await from2.exists()).toBeFalsy();
+    expect(await from3.exists()).toBeFalsy();
+    expect(await to1.readText()).toBe('hello1');
+    expect(await to2.readText()).toBe('hello2');
+    expect(await to3.readText()).toBe('hello3');
+
+    await dir1.remove({ recursive: true });
+    await dir2.remove({ recursive: true });
   });
 });
