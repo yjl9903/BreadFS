@@ -20,7 +20,7 @@ await local.writeText('This is used for testing')
 
 // Create WebDAV file system
 const wfs = WebDAVFS.make("https://some-server.org", {
-    username: "user",
+  username: "user",
   password: "pass"
 })
 
