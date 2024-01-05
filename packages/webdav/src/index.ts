@@ -25,7 +25,7 @@ export { createClient, AuthType } from 'webdav';
 export class WebDAVProvider implements BreadFSProvider {
   public readonly name = 'webdav';
 
-  private readonly client: WebDAVClient;
+  public readonly client: WebDAVClient;
 
   public constructor(remoteURL: string, options: WebDAVClientOptions = {}) {
     this.client = createClient(remoteURL, options);
