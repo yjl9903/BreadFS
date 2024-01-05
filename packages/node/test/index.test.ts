@@ -45,9 +45,37 @@ describe('File System', () => {
     `);
   });
 
+  it('should list stat', async () => {
+    const monorepo = fs.path('../');
+    expect((await monorepo.listStat()).map((p) => p.path.toString()).sort()).toMatchInlineSnapshot(`
+      [
+        "../breadfs",
+        "../core",
+        "../node",
+        "../webdav",
+      ]
+    `);
+  });
+
   it('should list recursive', async () => {
     const core = fs.path('../core/src');
     expect((await core.list({ recursive: true })).map((p) => p.toString()).sort())
+      .toMatchInlineSnapshot(`
+        [
+          "../core/src/breadfs.ts",
+          "../core/src/error.ts",
+          "../core/src/index.ts",
+          "../core/src/provider",
+          "../core/src/provider/index.ts",
+          "../core/src/provider/types.ts",
+          "../core/src/shim.d.ts",
+        ]
+      `);
+  });
+
+  it('should list recursive', async () => {
+    const core = fs.path('../core/src');
+    expect((await core.listStat({ recursive: true })).map((p) => p.path.toString()).sort())
       .toMatchInlineSnapshot(`
         [
           "../core/src/breadfs.ts",

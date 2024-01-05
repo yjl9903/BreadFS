@@ -11,11 +11,11 @@ import {
   CopyOptions,
   MoveOptions,
   RemoveOptions,
-  FileStat,
   ListOptions,
   MakeDirectoryOptions,
   ReadFileOptions,
-  WriteFileOptions
+  WriteFileOptions,
+  RawFileStat
 } from '@breadfs/core';
 
 export type { Headers, OAuthToken, WebDAVClient, WebDAVClientOptions } from 'webdav';
@@ -98,10 +98,11 @@ export class WebDAVProvider implements BreadFSProvider {
     }
   }
 
-  public async stat(path: string): Promise<FileStat> {
+  public async stat(path: string): Promise<RawFileStat> {
     const stat = (await this.client.stat(path)) as WebDAVFileStat;
 
     return {
+      path,
       size: stat.size,
       isFile: () => stat.type === 'file',
       isDirectory: () => stat.type === 'directory',
@@ -120,5 +121,21 @@ export class WebDAVProvider implements BreadFSProvider {
       deep: options.recursive
     })) as WebDAVFileStat[];
     return ps.map((p) => p.filename);
+  }
+
+  public async listStat(path: string, options: ListOptions): Promise<RawFileStat[]> {
+    const ps = (await this.client.getDirectoryContents(path, {
+      deep: options.recursive
+    })) as WebDAVFileStat[];
+
+    return ps.map((stat) => ({
+      path: stat.filename,
+      size: stat.size,
+      isFile: () => stat.type === 'file',
+      isDirectory: () => stat.type === 'directory',
+      isSymbolicLink: () => false,
+      mtime: new Date(stat.lastmod),
+      birthtime: undefined
+    }));
   }
 }

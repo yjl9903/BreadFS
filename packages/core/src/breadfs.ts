@@ -1,7 +1,7 @@
 import pathe from 'pathe';
 
 import {
-  FileStat,
+  RawFileStat,
   BreadFSProvider,
   ListOptions,
   RemoveOptions,
@@ -16,6 +16,12 @@ import {
   MoveOptions
 } from './provider';
 import { BreadFSError } from './error';
+
+type Prettify<T> = {
+  [K in keyof T]: T[K];
+} & {};
+
+export type FileStat = Prettify<{ path: Path } & Omit<RawFileStat, 'path'>>;
 
 export class BreadFS {
   public readonly provider: BreadFSProvider;
@@ -191,11 +197,10 @@ export class BreadFS {
             throw new Error(`${dst} is existed`);
           }
 
-          const srcStat = await this.stat(src);
-          if (srcStat.isFile()) {
+          const copyFile = async (src: string, dst: string | Path) => {
             const dstStat = await this.stat(dst).catch(() => undefined);
             if (dstStat && !dstStat.isFile()) {
-              throw new Error(`Can not copy to the directory ${dst}`);
+              throw new Error(`Can not copy file to directory ${dst}`);
             }
 
             if (options.fallback?.stream) {
@@ -211,9 +216,26 @@ export class BreadFS {
               const contents = await this.readFile(src, options.fallback?.file?.read);
               await this.writeFile(dst, contents, options.fallback?.file?.write);
             }
+          };
+
+          const srcStat = await this.stat(src);
+          if (srcStat.isFile()) {
+            await copyFile(src, dst);
           } else if (srcStat.isDirectory()) {
             // TODO
             throw new Error('Not support copy directory');
+            // const copyDirectory = async (src: string, dst: Path | string) => {
+            //   const dstStat = await this.stat(dst).catch(() => undefined);
+            //   if (dstStat) {
+            //     if (!dstStat.isDirectory()) {
+            //       throw new Error(`Can not copy directory to file ${dst}`);
+            //     }
+            //   } else {
+            //     await this.mkdir(dst);
+            //   }
+            //   const files = await this.list(src);
+            // };
+            // await copyDirectory(src, dst);
           } else {
             throw new Error('Not support copy other file types');
           }
@@ -300,8 +322,16 @@ export class BreadFS {
     return this.runAsync(() =>
       this.matchFS(
         path,
-        (p) => this.provider.stat(p, options),
-        (p) => p.fs.stat(p, options)
+        async (p) => {
+          const stat = (await this.provider.stat(p, options)) as unknown as FileStat;
+          stat.path = typeof path === 'string' ? new Path(this, p) : path;
+          return stat;
+        },
+        async (p) => {
+          const stat = (await p.fs.stat(p, options)) as FileStat;
+          stat.path = p;
+          return stat;
+        }
       )
     );
   }
@@ -310,8 +340,32 @@ export class BreadFS {
     return this.runAsync(() =>
       this.matchFS(
         path,
-        async (root) => (await this.provider.list(root, options)).map((sp) => this.path(root, sp)),
+        async (root) => {
+          const files = await this.provider.list(root, options);
+          return files.map((sp) => this.path(sp));
+        },
         (root) => root.fs.list(root, options)
+      )
+    );
+  }
+
+  public async listStat(path: string | Path, options: ListOptions = {}): Promise<FileStat[]> {
+    return this.runAsync(() =>
+      this.matchFS(
+        path,
+        async (root) => {
+          if (this.provider.listStat) {
+            const files = await this.provider.listStat(root, options);
+            return files.map((file) => {
+              const stat = file as unknown as FileStat;
+              stat.path = this.path(file.path);
+              return stat as FileStat;
+            });
+          }
+          const files = await this.list(path, options);
+          return await Promise.all(files.map((file) => this.stat(file)));
+        },
+        (root) => root.fs.listStat(root, options)
       )
     );
   }
@@ -455,6 +509,10 @@ export class Path {
 
   public async list(options: ListOptions = {}): Promise<Path[]> {
     return await this._fs.list(this._path, options);
+  }
+
+  public async listStat(options: ListOptions = {}): Promise<FileStat[]> {
+    return await this._fs.listStat(this._path, options);
   }
 
   // Utils

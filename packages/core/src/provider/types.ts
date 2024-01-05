@@ -179,7 +179,9 @@ export interface ListOptions {
   recursive?: boolean | undefined;
 }
 
-export interface FileStat {
+export interface RawFileStat {
+  path: string;
+
   size: number | bigint | undefined;
 
   isFile: () => boolean;

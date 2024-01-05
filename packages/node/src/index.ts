@@ -2,12 +2,12 @@ import { inspect } from 'node:util';
 import { Readable, Writable } from 'node:stream';
 import { promises as fs, createReadStream, createWriteStream } from 'node:fs';
 
+import pathe from 'pathe';
 import { copy, move, rm } from 'fs-extra';
 
 import {
   Path,
   BreadFSProvider,
-  FileStat,
   RemoveOptions,
   MakeDirectoryOptions,
   ListOptions,
@@ -18,7 +18,8 @@ import {
   MoveOptions,
   ReadStreamOptions,
   WriteStreamOptions,
-  WriteFileOptions
+  WriteFileOptions,
+  RawFileStat
 } from '@breadfs/core';
 
 // @ts-ignore
@@ -80,10 +81,11 @@ export class NodeProvider implements BreadFSProvider {
     await move(src, dst, options);
   }
 
-  public async stat(path: string, options: StatOptions): Promise<FileStat> {
+  public async stat(path: string, options: StatOptions): Promise<RawFileStat> {
     const stat = await fs.stat(path, options);
 
     return {
+      path,
       size: stat.size,
       isFile: () => stat.isFile(),
       isDirectory: () => stat.isDirectory(),
@@ -103,7 +105,21 @@ export class NodeProvider implements BreadFSProvider {
   }
 
   public async list(path: string, options: ListOptions): Promise<string[]> {
-    return await fs.readdir(path, options);
+    return (await fs.readdir(path, options)).map((p) => pathe.join(path, p));
+  }
+
+  public async listStat(path: string, options: ListOptions): Promise<RawFileStat[]> {
+    const dirs = await fs.readdir(path, { ...options, withFileTypes: true });
+
+    return dirs.map((stat) => ({
+      path: pathe.join(stat.path, stat.name),
+      size: undefined,
+      isFile: () => stat.isFile(),
+      isDirectory: () => stat.isDirectory(),
+      isSymbolicLink: () => stat.isSymbolicLink(),
+      mtime: undefined,
+      birthtime: undefined
+    }));
   }
 }
 

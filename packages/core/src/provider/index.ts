@@ -1,5 +1,5 @@
 import type {
-  FileStat,
+  RawFileStat,
   MakeDirectoryOptions,
   RemoveOptions,
   ListOptions,
@@ -42,11 +42,13 @@ export interface BreadFSProvider {
 
   remove: (path: string, options: RemoveOptions) => Promise<void>;
 
-  stat: (path: string, options: StatOptions) => Promise<FileStat>;
+  stat: (path: string, options: StatOptions) => Promise<RawFileStat>;
 
   exists: (path: string) => Promise<boolean>;
 
   list: (path: string, options: ListOptions) => Promise<string[]>;
+
+  listStat?: (path: string, options: ListOptions) => Promise<RawFileStat[]>;
 
   walk?: (path: string) => AsyncIterable<string>;
 }

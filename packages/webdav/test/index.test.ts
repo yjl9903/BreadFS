@@ -78,16 +78,53 @@ describe('webdav', () => {
       ]
     `);
 
+    expect(
+      (await fs.path('/').listStat())
+        .map((p) => p.path)
+        .filter((p) => !p.path.endsWith('.DS_Store'))
+        .map((p) => p.path)
+        .sort()
+    ).toMatchInlineSnapshot(`
+      [
+        "/alrighty.jpg",
+        "/file % name.txt",
+        "/file&name.txt",
+        "/format.json",
+        "/notes.txt",
+        "/sub1",
+        "/text document.txt",
+        "/two words",
+        "/two%20words",
+        "/webdav",
+        "/with & in path",
+      ]
+    `);
+
     expect((await fs.path('/sub1').list()).map((p) => p.path).sort()).toMatchInlineSnapshot(`
       [
-        "/sub1/sub1/irrelephant.jpg",
-        "/sub1/sub1/ยากจน #1.txt",
+        "/sub1/irrelephant.jpg",
+        "/sub1/ยากจน #1.txt",
+      ]
+    `);
+
+    expect((await fs.path('/sub1').listStat()).map((p) => p.path.toString()).sort())
+      .toMatchInlineSnapshot(`
+      [
+        "/sub1/irrelephant.jpg",
+        "/sub1/ยากจน #1.txt",
       ]
     `);
 
     expect((await fs.path('/webdav/server').list()).map((p) => p.path)).toMatchInlineSnapshot(`
       [
-        "/webdav/server/webdav/server/notreal.txt",
+        "/webdav/server/notreal.txt",
+      ]
+    `);
+
+    expect((await fs.path('/webdav/server').listStat()).map((p) => p.path.toString()))
+      .toMatchInlineSnapshot(`
+      [
+        "/webdav/server/notreal.txt",
       ]
     `);
   });
@@ -95,6 +132,35 @@ describe('webdav', () => {
   it('should list files recursively', async () => {
     expect(
       (await fs.path('/').list({ recursive: true }))
+        .filter((p) => !p.path.endsWith('.DS_Store'))
+        .map((p) => p.path)
+        .sort()
+    ).toMatchInlineSnapshot(`
+      [
+        "/alrighty.jpg",
+        "/file % name.txt",
+        "/file&name.txt",
+        "/format.json",
+        "/notes.txt",
+        "/sub1",
+        "/sub1/irrelephant.jpg",
+        "/sub1/ยากจน #1.txt",
+        "/text document.txt",
+        "/two words",
+        "/two words/file.txt",
+        "/two%20words",
+        "/two%20words/file2.txt",
+        "/webdav",
+        "/webdav/server",
+        "/webdav/server/notreal.txt",
+        "/with & in path",
+        "/with & in path/file.txt",
+      ]
+    `);
+
+    expect(
+      (await fs.path('/').listStat({ recursive: true }))
+        .map((p) => p.path)
         .filter((p) => !p.path.endsWith('.DS_Store'))
         .map((p) => p.path)
         .sort()
