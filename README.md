@@ -59,6 +59,10 @@ await nfs.path('/home/test.txt').writeText('This is used for testing')
 
 ### WebDAV
 
+```bash
+npm i breadfs @breadfs/webdav
+```
+
 ```ts
 import { WebDAVFS } from 'breadfs/webdav'
 
