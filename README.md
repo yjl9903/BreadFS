@@ -5,11 +5,31 @@
 
 Unified File System Abstraction.
 
-+ File System operation API
-+ [Node.js fs module](https://nodejs.org/api/fs.html) wrapper
-+ [WebDAV client](https://github.com/perry-mitchell/webdav-client) wrapper
++ Frequently used **file system operation API**
++ **Operate files cross across different file systems**
++ [Node.js fs module](https://nodejs.org/api/fs.html) provider
++ [WebDAV client](https://github.com/perry-mitchell/webdav-client) provider
 
-> 👷‍♂️ Still work in progress.
+```ts
+import { fs as nfs } from 'breadfs/node'
+import { WebDAVFS } from 'breadfs/webdav'
+
+// Write something to hello.txt
+const local = nfs.path('hello.txt')
+await local.writeText('This is used for testing')
+
+// Create WebDAV file system
+const wfs = WebDAVFS.make("https://some-server.org", {
+    username: "user",
+  password: "pass"
+})
+
+// Copy the local hello.txt to the remote WebDAV server
+const remote = wfs.path('/hello.txt')
+await local.copyTo(remote)
+await remote.readText()
+// Return 'This is used for testing'
+```
 
 ## Installation
 
@@ -43,12 +63,38 @@ await nfs.path('/home/test.txt').writeText('This is used for testing')
 import { WebDAVFS } from 'breadfs/webdav'
 
 const wfs = WebDAVFS.make("https://some-server.org", {
-    username: "user",
-    password: "pass"
+  username: "user",
+  password: "pass"
 })
 
 await wfs.path('/test.txt').readText()
 ```
+
+### Across different file systems
+
+```ts
+import { fs as nfs } from 'breadfs/node'
+import { WebDAVFS } from 'breadfs/webdav'
+
+const wfs = WebDAVFS.make("https://some-server.org", {
+  username: "user",
+  password: "pass"
+})
+
+const local = nfs.path('hello.txt')
+const remote = wfs.path('/hello.txt')
+await local.writeText('This is used for testing')
+await local.copyTo(remote)
+await remote.readText()  // 'This is used for testing'
+```
+
+Operating files across various different file systems can be quite **challenging**, which means our implementation may **not function perfectly in all scenarios**. Even file system in your local machine may encounter some bugs.
+
+So that the goal of this package is to provide **a straightforward abstraction and utility** for use in **less complex or basic situations**.
+
+## Related
+
+This package is used to power [AnimeSpace](https://github.com/yjl9903/AnimeSpace), offering a comprehensive solution for automatically following bangumis. It can fetch anime resources, download desired video content, and upload them to the local file system or remote WebDAV server. The upload process is facilitated by this package.
 
 ## License
 
