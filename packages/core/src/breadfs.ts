@@ -222,20 +222,31 @@ export class BreadFS {
           if (srcStat.isFile()) {
             await copyFile(src, dst);
           } else if (srcStat.isDirectory()) {
-            // TODO
-            throw new Error('Not support copy directory');
-            // const copyDirectory = async (src: string, dst: Path | string) => {
-            //   const dstStat = await this.stat(dst).catch(() => undefined);
-            //   if (dstStat) {
-            //     if (!dstStat.isDirectory()) {
-            //       throw new Error(`Can not copy directory to file ${dst}`);
-            //     }
-            //   } else {
-            //     await this.mkdir(dst);
-            //   }
-            //   const files = await this.list(src);
-            // };
-            // await copyDirectory(src, dst);
+            const copyDirectory = async (src: string, dst: Path) => {
+              const dstStat = await this.stat(dst).catch(() => undefined);
+              if (dstStat) {
+                if (!dstStat.isDirectory()) {
+                  throw new Error(`Can not copy directory to file ${dst}`);
+                }
+              } else {
+                await this.mkdir(dst);
+              }
+              const files = await this.listStat(src);
+              await Promise.all(
+                files.map(async (file): Promise<void> => {
+                  const name = file.path.basename;
+                  if (file.isDirectory()) {
+                    await copyDirectory(file.path.path, dst.join(name));
+                  } else if (file.isFile()) {
+                    await copyFile(file.path.path, dst.join(name));
+                  } else {
+                    throw new Error('Not support copy other file types');
+                  }
+                })
+              );
+            };
+
+            await copyDirectory(src, typeof dst === 'string' ? new Path(this, dst) : dst);
           } else {
             throw new Error('Not support copy other file types');
           }

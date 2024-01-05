@@ -318,7 +318,7 @@ describe('webdav', () => {
 
   it('should copy directory from node to webdav', async () => {
     const dir1 = nfs.path(temp, 'dir1');
-    const dir2 = fs.path('/webdav/copied-dir');
+    const dir2 = fs.path('/webdav/copied-dir-from-node');
 
     const from1 = fs.path(dir1, 'file1.txt');
     const from2 = fs.path(dir1, 'file2.txt');
@@ -330,14 +330,14 @@ describe('webdav', () => {
     await from2.writeText('hello2');
     await from3.writeText('hello3');
 
-    // await dir1.copyTo(dir2);
+    await dir1.copyTo(dir2);
 
-    // const to1 = fs.path(dir2, 'file1.txt');
-    // const to2 = fs.path(dir2, 'file2.txt');
-    // const to3 = fs.path(dir2, 'nest', 'file.txt');
-    // expect(await to1.readText()).toBe('hello1');
-    // expect(await to2.readText()).toBe('hello2');
-    // expect(await to3.readText()).toBe('hello3');
+    const to1 = fs.path(dir2, 'file1.txt');
+    const to2 = fs.path(dir2, 'file2.txt');
+    const to3 = fs.path(dir2, 'nest', 'file.txt');
+    expect(await to1.readText()).toBe('hello1');
+    expect(await to2.readText()).toBe('hello2');
+    expect(await to3.readText()).toBe('hello3');
 
     await dir1.remove({ recursive: true });
     await dir2.remove({ recursive: true });
