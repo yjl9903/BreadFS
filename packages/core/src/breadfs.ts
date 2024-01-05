@@ -285,11 +285,10 @@ export class BreadFS {
             throw new Error(`${dst} is existed`);
           }
 
-          const srcStat = await this.stat(src);
-          if (srcStat.isFile()) {
+          const moveFile = async (src: string, dst: string | Path) => {
             const dstStat = await this.stat(dst).catch(() => undefined);
             if (dstStat && !dstStat.isFile()) {
-              throw new Error(`Can not copy to the directory ${dst}`);
+              throw new Error(`Can not move file to directory ${dst}`);
             }
 
             if (options.fallback?.stream) {
@@ -307,9 +306,38 @@ export class BreadFS {
               await this.writeFile(dst, contents, options.fallback?.file?.write);
               await this.remove(src, options.fallback?.file?.remove);
             }
+          };
+
+          const srcStat = await this.stat(src);
+          if (srcStat.isFile()) {
+            await moveFile(src, dst);
           } else if (srcStat.isDirectory()) {
-            // TODO
-            throw new Error('Not support move directory');
+            const moveDirectory = async (src: string, dst: Path) => {
+              const dstStat = await this.stat(dst).catch(() => undefined);
+              if (dstStat) {
+                if (!dstStat.isDirectory()) {
+                  throw new Error(`Can not move directory to file ${dst}`);
+                }
+              } else {
+                await this.mkdir(dst);
+              }
+              const files = await this.listStat(src);
+              await Promise.all(
+                files.map(async (file): Promise<void> => {
+                  const name = file.path.basename;
+                  if (file.isDirectory()) {
+                    await moveDirectory(file.path.path, dst.join(name));
+                  } else if (file.isFile()) {
+                    await moveFile(file.path.path, dst.join(name));
+                  } else {
+                    throw new Error('Not support move other file types');
+                  }
+                })
+              );
+              await this.remove(src, options.fallback?.file?.remove);
+            };
+
+            await moveDirectory(src, typeof dst === 'string' ? new Path(this, dst) : dst);
           } else {
             throw new Error('Not support move other file types');
           }
