@@ -131,6 +131,36 @@ describe('webdav', () => {
     expect(await books.exists()).toBeFalsy();
   });
 
+  it('should copy directory', async () => {
+    const dir1 = fs.path('/test-dir1');
+    const dir2 = fs.path('/test-dir2');
+
+    const from1 = fs.path(dir1, 'file1.txt');
+    const from2 = fs.path(dir1, 'file2.txt');
+    const from3 = fs.path(dir1, 'nest', 'file.txt');
+
+    await fs.path(dir1).mkdir({ recursive: true });
+    await fs.path(dir1, 'nest').mkdir({ recursive: true });
+    await from1.writeText('hello1');
+    await from2.writeText('hello2');
+    await from3.writeText('hello3');
+
+    await dir1.copyTo(dir2);
+
+    const to1 = fs.path(dir2, 'file1.txt');
+    const to2 = fs.path(dir2, 'file2.txt');
+    const to3 = fs.path(dir2, 'nest', 'file.txt');
+    expect(await from1.exists()).toBeTruthy();
+    expect(await from2.exists()).toBeTruthy();
+    expect(await from3.exists()).toBeTruthy();
+    expect(await to1.readText()).toBe('hello1');
+    expect(await to2.readText()).toBe('hello2');
+    expect(await to3.readText()).toBe('hello3');
+
+    await dir1.remove({ recursive: true });
+    await dir2.remove({ recursive: true });
+  });
+
   it('should move file', async () => {
     const notes = fs.path('/format.json');
     const books = fs.path('/format2.json');
