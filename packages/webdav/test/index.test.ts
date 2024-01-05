@@ -145,9 +145,10 @@ describe('webdav', () => {
     const node = temp.join('node.txt');
     await node.writeText('This is from node');
 
-    const to = fs.path('/webdav/node-pasted.txt');
+    const to = fs.path('/webdav/node-pasted-1.txt');
     await node.copyTo(to);
     await sleep(100);
+    expect(await node.exists()).toBeTruthy();
     expect(await to.readText()).toBe('This is from node');
 
     await node.remove();
@@ -158,19 +159,53 @@ describe('webdav', () => {
     const node = temp.join('node.txt');
     await node.writeText('This is from node - 1');
 
-    const to = fs.path('/webdav/node-pasted.txt');
+    const to = fs.path('/webdav/node-pasted-2.txt');
     await node.copyTo(to);
     await sleep(20);
 
     await node.writeText('This is from node - 2');
-    await node.copyTo(to);
+    await node.copyTo(to, { overwrite: true });
     await sleep(20);
 
     await node.writeText('This is from node - 3');
-    await node.copyTo(to);
+    await node.copyTo(to, { overwrite: true });
     await sleep(20);
 
+    expect(await node.exists()).toBeTruthy();
     expect(await to.readText()).toBe('This is from node - 3');
+
+    await node.remove();
+    await to.remove();
+  });
+
+  it('should move from node to webdav', async () => {
+    const node = temp.join('node-move-1.txt');
+    await node.writeText('This is from node');
+
+    const to = fs.path('/webdav/node-moved-1.txt');
+    await node.moveTo(to);
+    await sleep(100);
+    expect(await node.exists()).toBeFalsy();
+    expect(await to.readText()).toBe('This is from node');
+
+    await node.remove();
+    await to.remove();
+  });
+
+  it('should overwrite move from node to webdav', async () => {
+    const node = temp.join('node-move-2.txt');
+    await node.writeText('This is from node');
+
+    const to = fs.path('/webdav/node-moved-2.txt');
+    await node.copyTo(to);
+    await sleep(100);
+    expect(await node.exists()).toBeTruthy();
+    expect(await to.readText()).toBe('This is from node');
+
+    await node.writeText(`This is from node - 2`);
+    await node.moveTo(to, { overwrite: true });
+    expect(await node.exists()).toBeFalsy();
+    expect(await to.readText()).toBe('This is from node - 2');
 
     await node.remove();
     await to.remove();

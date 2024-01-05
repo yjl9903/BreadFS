@@ -167,8 +167,18 @@ export class BreadFS {
             return;
           }
 
+          // Check overwrite
+          if (!options.overwrite && (await this.exists(dst))) {
+            throw new Error(`${dst} is existed`);
+          }
+
           const srcStat = await this.stat(src);
           if (srcStat.isFile()) {
+            const dstStat = await this.stat(dst).catch(() => undefined);
+            if (dstStat && !dstStat.isFile()) {
+              throw new Error(`Can not copy to the directory ${dst}`);
+            }
+
             if (options.fallback?.stream) {
               // Use stream to implement copy
               const read = this.createReadStream(src, options.fallback.stream.read);
@@ -210,8 +220,18 @@ export class BreadFS {
             return;
           }
 
+          // Check overwrite
+          if (!options.overwrite && (await this.exists(dst))) {
+            throw new Error(`${dst} is existed`);
+          }
+
           const srcStat = await this.stat(src);
           if (srcStat.isFile()) {
+            const dstStat = await this.stat(dst).catch(() => undefined);
+            if (dstStat && !dstStat.isFile()) {
+              throw new Error(`Can not copy to the directory ${dst}`);
+            }
+
             if (options.fallback?.stream) {
               // Use stream to implement move file
               const read = this.createReadStream(src, options.fallback.stream.read);
