@@ -10,6 +10,7 @@ import {
   BreadFSProvider,
   CopyOptions,
   MoveOptions,
+  RemoveOptions,
   FileStat,
   ListOptions,
   MakeDirectoryOptions,
@@ -83,7 +84,7 @@ export class WebDAVProvider implements BreadFSProvider {
     await this.client.moveFile(src, dst);
   }
 
-  public async remove(path: string): Promise<void> {
+  public async remove(path: string, options: RemoveOptions): Promise<void> {
     await this.client.deleteFile(path);
   }
 
@@ -108,6 +109,6 @@ export class WebDAVProvider implements BreadFSProvider {
     const ps = (await this.client.getDirectoryContents(path, {
       deep: options.recursive
     })) as WebDAVFileStat[];
-    return ps.map((p) => p.basename);
+    return ps.map((p) => p.filename);
   }
 }
