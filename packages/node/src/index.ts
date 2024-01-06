@@ -5,7 +5,7 @@ import { promises as fs, createReadStream, createWriteStream } from 'node:fs';
 import pathe from 'pathe';
 import fse from 'fs-extra';
 
-import {
+import type {
   Path,
   BreadFSProvider,
   RemoveOptions,

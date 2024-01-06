@@ -1,12 +1,9 @@
-import { Readable, Writable } from 'node:stream';
-import {
-  createClient,
-  WebDAVClient,
-  WebDAVClientOptions,
-  FileStat as WebDAVFileStat
-} from 'webdav';
+import type { WebDAVClientOptions, FileStat as WebDAVFileStat } from 'webdav';
 
-import {
+import { Readable, Writable } from 'node:stream';
+import { createClient, WebDAVClient } from 'webdav';
+
+import type {
   BreadFSProvider,
   CopyOptions,
   MoveOptions,
@@ -19,8 +16,6 @@ import {
 } from '@breadfs/core';
 
 export type { Headers, OAuthToken, WebDAVClient, WebDAVClientOptions } from 'webdav';
-
-export { createClient, AuthType } from 'webdav';
 
 export class WebDAVProvider implements BreadFSProvider<'webdav'> {
   public readonly name = 'webdav';
