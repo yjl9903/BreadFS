@@ -17,6 +17,8 @@ import type {
 
 export type { Headers, OAuthToken, WebDAVClient, WebDAVClientOptions } from 'webdav';
 
+export { AuthType } from 'webdav';
+
 export class WebDAVProvider implements BreadFSProvider<'webdav'> {
   public readonly name = 'webdav';
 

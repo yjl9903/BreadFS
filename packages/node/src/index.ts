@@ -6,7 +6,6 @@ import pathe from 'pathe';
 import fse from 'fs-extra';
 
 import type {
-  Path,
   BreadFSProvider,
   RemoveOptions,
   MakeDirectoryOptions,
@@ -21,6 +20,8 @@ import type {
   WriteFileOptions,
   RawFileStat
 } from '@breadfs/core';
+
+import { Path } from '@breadfs/core';
 
 // @ts-ignore
 Path.prototype[inspect.custom] = function () {
