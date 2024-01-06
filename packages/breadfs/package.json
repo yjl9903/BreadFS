@@ -56,8 +56,8 @@
   "scripts": {
     "build": "unbuild",
     "format": "prettier --write src/**/*.ts test/**/*.ts",
-    "test": "vitest",
-    "test:ci": "vitest --run",
+    "test": "vitest --typecheck",
+    "test:ci": "vitest --run --typecheck",
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {

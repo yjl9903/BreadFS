@@ -23,18 +23,22 @@ type Prettify<T> = {
 
 export type FileStat = Prettify<{ path: Path } & Omit<RawFileStat, 'path'>>;
 
-export class BreadFS {
-  public readonly provider: BreadFSProvider;
+export class BreadFS<P extends BreadFSProvider<string> = BreadFSProvider<string>> {
+  public readonly provider: P;
 
-  public constructor(provider: BreadFSProvider) {
+  public constructor(provider: P) {
     this.provider = provider;
   }
 
-  public static of(provider: BreadFSProvider) {
-    return new BreadFS(provider);
+  public static of<P extends BreadFSProvider<string>>(provider: P) {
+    return new BreadFS<P>(provider);
   }
 
-  public path(root: string | Path, ...paths: string[]): Path {
+  public get name(): P['name'] {
+    return this.provider.name;
+  }
+
+  public path(root: string | Path<P>, ...paths: string[]): Path<P> {
     const ps = pathe.join(typeof root === 'string' ? root : root.path, ...paths);
     if (typeof root === 'string') {
       return new Path(this, ps);
@@ -442,12 +446,12 @@ export class BreadFS {
   // ---
 }
 
-export class Path {
-  private readonly _fs: BreadFS;
+export class Path<P extends BreadFSProvider<string> = BreadFSProvider<string>> {
+  private readonly _fs: BreadFS<P>;
 
   private readonly _path: string;
 
-  public constructor(fs: BreadFS, path: string) {
+  public constructor(fs: BreadFS<P>, path: string) {
     this._fs = fs;
     this._path = path;
   }
@@ -473,11 +477,11 @@ export class Path {
     return pathe.extname(this._path);
   }
 
-  public join(...pieces: string[]): Path {
+  public join(...pieces: string[]): Path<P> {
     return new Path(this._fs, pathe.join(this._path, ...pieces));
   }
 
-  public resolve(...pieces: string[]): Path {
+  public resolve(...pieces: string[]): Path<P> {
     return new Path(this._fs, pathe.resolve(this._path, ...pieces));
   }
 

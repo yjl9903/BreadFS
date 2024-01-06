@@ -22,7 +22,7 @@ export type { Headers, OAuthToken, WebDAVClient, WebDAVClientOptions } from 'web
 
 export { createClient, AuthType } from 'webdav';
 
-export class WebDAVProvider implements BreadFSProvider {
+export class WebDAVProvider implements BreadFSProvider<'webdav'> {
   public readonly name = 'webdav';
 
   public readonly client: WebDAVClient;

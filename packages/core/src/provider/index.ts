@@ -15,8 +15,8 @@ import type {
 
 export type * from './types';
 
-export interface BreadFSProvider {
-  readonly name: string;
+export interface BreadFSProvider<T extends string> {
+  readonly name: T;
 
   mkdir: (path: string, options: MakeDirectoryOptions) => Promise<void>;
 

@@ -27,7 +27,7 @@ Path.prototype[inspect.custom] = function () {
   return this.toString();
 };
 
-export class NodeProvider implements BreadFSProvider {
+export class NodeProvider implements BreadFSProvider<'node'> {
   public readonly name = 'node';
 
   public createReadStream(path: string, options: ReadStreamOptions) {
