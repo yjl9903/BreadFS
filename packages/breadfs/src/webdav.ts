@@ -5,7 +5,7 @@ export * from '@breadfs/core';
 
 export * from '@breadfs/webdav';
 
-export class WebDAVFS extends BreadFS {
+export class WebDAVFS extends BreadFS<WebDAVProvider> {
   public constructor(remoteURL: string, options: WebDAVClientOptions = {}) {
     super(new WebDAVProvider(remoteURL, options));
   }

@@ -21,7 +21,21 @@ type Prettify<T> = {
   [K in keyof T]: T[K];
 } & {};
 
-export type FileStat = Prettify<{ path: Path } & Omit<RawFileStat, 'path'>>;
+export type FileStat<P extends BreadFSProvider<string>> = Prettify<
+  { path: Path<P> } & Omit<RawFileStat, 'path'>
+>;
+
+type AcrossFileStat<T extends string | Path, P extends BreadFSProvider<string>> = T extends Path<
+  infer R
+>
+  ? FileStat<R>
+  : FileStat<P>;
+
+type AcrossPath<T extends string | Path, P extends BreadFSProvider<string>> = T extends Path<
+  infer R
+>
+  ? Path<R>
+  : Path<P>;
 
 export class BreadFS<P extends BreadFSProvider<string> = BreadFSProvider<string>> {
   public readonly provider: P;
@@ -38,12 +52,12 @@ export class BreadFS<P extends BreadFSProvider<string> = BreadFSProvider<string>
     return this.provider.name;
   }
 
-  public path(root: string | Path<P>, ...paths: string[]): Path<P> {
+  public path<T extends string | Path>(root: T, ...paths: string[]): AcrossPath<T, P> {
     const ps = pathe.join(typeof root === 'string' ? root : root.path, ...paths);
     if (typeof root === 'string') {
-      return new Path(this, ps);
+      return new Path(this, ps) as AcrossPath<T, P>;
     } else {
-      return new Path(root.fs, ps);
+      return new Path(root.fs, ps) as AcrossPath<T, P>;
     }
   }
 
@@ -73,12 +87,15 @@ export class BreadFS<P extends BreadFSProvider<string> = BreadFSProvider<string>
     );
   }
 
-  public async mkdir(path: string | Path, options: MakeDirectoryOptions = {}): Promise<Path> {
+  public async mkdir<T extends string | Path>(
+    path: T,
+    options: MakeDirectoryOptions = {}
+  ): Promise<void> {
     const resolved: MakeDirectoryOptions = { recursive: true, ...options };
-    return this.runAsync(() =>
+    await this.runAsync(() =>
       this.matchFS(
         path,
-        async (p) => (await this.provider.mkdir(p, resolved), this.path(p)),
+        async (p) => await this.provider.mkdir(p, resolved),
         async (p) => p.fs.mkdir(p, resolved)
       )
     );
@@ -361,17 +378,20 @@ export class BreadFS<P extends BreadFSProvider<string> = BreadFSProvider<string>
     );
   }
 
-  public async stat(path: string | Path, options: StatOptions = {}): Promise<FileStat> {
+  public async stat<T extends string | Path>(
+    path: T,
+    options: StatOptions = {}
+  ): Promise<AcrossFileStat<T, P>> {
     return this.runAsync(() =>
       this.matchFS(
         path,
         async (p) => {
-          const stat = (await this.provider.stat(p, options)) as unknown as FileStat;
+          const stat = (await this.provider.stat(p, options)) as unknown as AcrossFileStat<T, P>;
           stat.path = typeof path === 'string' ? new Path(this, p) : path;
           return stat;
         },
         async (p) => {
-          const stat = (await p.fs.stat(p, options)) as FileStat;
+          const stat = (await p.fs.stat(p, options)) as AcrossFileStat<T, P>;
           stat.path = p;
           return stat;
         }
@@ -379,20 +399,26 @@ export class BreadFS<P extends BreadFSProvider<string> = BreadFSProvider<string>
     );
   }
 
-  public async list(path: string | Path, options: ListOptions = {}): Promise<Path[]> {
+  public async list<T extends string | Path>(
+    path: T,
+    options: ListOptions = {}
+  ): Promise<AcrossPath<T, P>[]> {
     return this.runAsync(() =>
       this.matchFS(
         path,
         async (root) => {
           const files = await this.provider.list(root, options);
-          return files.map((sp) => this.path(sp));
+          return files.map((sp) => this.path(sp) as AcrossPath<T, P>);
         },
-        (root) => root.fs.list(root, options)
+        (root) => root.fs.list<T>(root as T, options) as Promise<AcrossPath<T, P>[]>
       )
     );
   }
 
-  public async listStat(path: string | Path, options: ListOptions = {}): Promise<FileStat[]> {
+  public async listStat<T extends string | Path>(
+    path: T,
+    options: ListOptions = {}
+  ): Promise<AcrossFileStat<T, P>[]> {
     return this.runAsync(() =>
       this.matchFS(
         path,
@@ -400,24 +426,27 @@ export class BreadFS<P extends BreadFSProvider<string> = BreadFSProvider<string>
           if (this.provider.listStat) {
             const files = await this.provider.listStat(root, options);
             return files.map((file) => {
-              const stat = file as unknown as FileStat;
+              const stat = file as unknown as AcrossFileStat<T, P>;
               stat.path = this.path(file.path);
-              return stat as FileStat;
+              return stat as AcrossFileStat<T, P>;
             });
           }
           const files = await this.list(path, options);
-          return await Promise.all(files.map((file) => this.stat(file)));
+          return (await Promise.all(files.map((file) => this.stat(file)))) as AcrossFileStat<
+            T,
+            P
+          >[];
         },
-        (root) => root.fs.listStat(root, options)
+        (root) => root.fs.listStat(root, options) as Promise<AcrossFileStat<T, P>[]>
       )
     );
   }
 
   // ---
-  private matchFS<T extends {}>(
-    path: string | Path,
-    match: (path: string) => T,
-    miss: (path: Path) => T
+  private matchFS<T extends string | Path, R extends {}>(
+    path: T,
+    match: (path: string) => R,
+    miss: (path: Path) => R
   ) {
     if (typeof path === 'string') {
       return match(path);
@@ -456,11 +485,11 @@ export class Path<P extends BreadFSProvider<string> = BreadFSProvider<string>> {
     this._path = path;
   }
 
-  public get fs() {
+  public get fs(): BreadFS<P> {
     return this._fs;
   }
 
-  public get path() {
+  public get path(): string {
     return this._path;
   }
 
@@ -502,7 +531,7 @@ export class Path<P extends BreadFSProvider<string> = BreadFSProvider<string>> {
     await this._fs.mkdir(this._path, options);
   }
 
-  public async stat(options: StatOptions = {}): Promise<FileStat> {
+  public async stat(options: StatOptions = {}): Promise<FileStat<P>> {
     return this._fs.stat(this._path, options);
   }
 
@@ -522,44 +551,47 @@ export class Path<P extends BreadFSProvider<string> = BreadFSProvider<string>> {
     return await this._fs.exists(this._path);
   }
 
-  public async readFile(options: ReadFileOptions = {}) {
+  public async readFile(options: ReadFileOptions = {}): Promise<Uint8Array> {
     return this._fs.readFile(this._path, options);
   }
 
-  public async readText(options: BufferEncoding | EncodingOptions = 'utf-8') {
+  public async readText(options: BufferEncoding | EncodingOptions = 'utf-8'): Promise<string> {
     return this._fs.readText(this._path, options);
   }
 
-  public async writeFile(buffer: Uint8Array, options: WriteFileOptions = {}) {
+  public async writeFile(buffer: Uint8Array, options: WriteFileOptions = {}): Promise<void> {
     return this._fs.writeFile(this._path, buffer, options);
   }
 
-  public async writeText(content: string, options: BufferEncoding | EncodingOptions = 'utf-8') {
-    return this._fs.writeText(this._path, content, options);
+  public async writeText(
+    content: string,
+    options: BufferEncoding | EncodingOptions = 'utf-8'
+  ): Promise<void> {
+    await this._fs.writeText(this._path, content, options);
   }
 
-  public async copyTo(dst: string | Path, options: CopyOptions = {}) {
-    return this._fs.copy(this, dst, options);
+  public async copyTo(dst: string | Path, options: CopyOptions = {}): Promise<void> {
+    await this._fs.copy(this, dst, options);
   }
 
-  public async moveTo(dst: string | Path, options: MoveOptions = {}) {
-    return this._fs.move(this, dst, options);
+  public async moveTo(dst: string | Path, options: MoveOptions = {}): Promise<void> {
+    await this._fs.move(this, dst, options);
   }
 
   public async remove(options: RemoveOptions = {}): Promise<void> {
     await this._fs.remove(this._path, options);
   }
 
-  public async list(options: ListOptions = {}): Promise<Path[]> {
+  public async list(options: ListOptions = {}): Promise<Path<P>[]> {
     return await this._fs.list(this._path, options);
   }
 
-  public async listStat(options: ListOptions = {}): Promise<FileStat[]> {
+  public async listStat(options: ListOptions = {}): Promise<FileStat<P>[]> {
     return await this._fs.listStat(this._path, options);
   }
 
   // Utils
-  public toString() {
+  public toString(): string {
     return this._path;
   }
 }
