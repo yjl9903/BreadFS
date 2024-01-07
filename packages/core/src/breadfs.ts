@@ -559,6 +559,11 @@ export class Path<P extends BreadFSProvider<string> = BreadFSProvider<string>> {
     return this._fs.readText(this._path, options);
   }
 
+  public async readJSON<T>(): Promise<T> {
+    const content = await this._fs.readText(this._path);
+    return JSON.parse(content);
+  }
+
   public async writeFile(buffer: Uint8Array, options: WriteFileOptions = {}): Promise<void> {
     return this._fs.writeFile(this._path, buffer, options);
   }
@@ -568,6 +573,15 @@ export class Path<P extends BreadFSProvider<string> = BreadFSProvider<string>> {
     options: BufferEncoding | EncodingOptions = 'utf-8'
   ): Promise<void> {
     await this._fs.writeText(this._path, content, options);
+  }
+
+  public async writeJSON<T>(
+    value: T,
+    replacer?: Parameters<typeof JSON.stringify>[1],
+    space?: Parameters<typeof JSON.stringify>[2]
+  ): Promise<void> {
+    const content = JSON.stringify(value, replacer, space);
+    await this._fs.writeText(this._path, content);
   }
 
   public async copyTo(dst: string | Path, options: CopyOptions = {}): Promise<void> {
