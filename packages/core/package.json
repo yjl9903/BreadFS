@@ -43,7 +43,7 @@
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
-    "pathe": "^1.1.1"
+    "pathe": "^1.1.2"
   },
   "engines": {
     "node": ">=v20.6.1"
