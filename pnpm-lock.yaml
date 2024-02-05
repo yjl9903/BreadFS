@@ -256,8 +256,8 @@ packages:
       '@babel/types': 7.23.9
     dev: true
 
-  /@babel/standalone@7.23.9:
-    resolution: {integrity: sha512-89NGhVfgKDqDQrtNPxqfnhIReKvp2CR80ofPNEAUpbtnouFelq33hQFURLralD9I+eFS7s5zVK61JRg/D1nLWg==}
+  /@babel/standalone@7.23.10:
+    resolution: {integrity: sha512-xqWviI/pt1Zb/d+6ilWa5IDL2mkDzsBnlHbreqnfyP3/QB/ofQ1bNVcHj8YQX154Rf/xZKR6y0s1ydVF3nAS8g==}
     engines: {node: '>=6.9.0'}
     dev: true
 
@@ -609,7 +609,7 @@ packages:
       estree-walker: 2.0.2
       glob: 8.1.0
       is-reference: 1.2.1
-      magic-string: 0.30.5
+      magic-string: 0.30.6
       rollup: 3.29.4
     dev: true
 
@@ -654,7 +654,7 @@ packages:
         optional: true
     dependencies:
       '@rollup/pluginutils': 5.1.0(rollup@3.29.4)
-      magic-string: 0.30.5
+      magic-string: 0.30.6
       rollup: 3.29.4
     dev: true
 
@@ -794,19 +794,13 @@ packages:
     resolution: {integrity: sha512-yTbItCNreRooED33qjunPthRcSjERP1r4MqCZc7wv0u2sUkzTFp45tgUfS5+r7FrZPdmCCNflLhVSP/o+SemsQ==}
     dependencies:
       '@types/jsonfile': 6.1.4
-      '@types/node': 20.11.10
+      '@types/node': 20.11.16
     dev: true
 
   /@types/jsonfile@6.1.4:
     resolution: {integrity: sha512-D5qGUYwjvnNNextdU59/+fI+spnwtTFmyQP0h+PfIOSkNfpU6AOICUOkm4i0OnSk+NyjdPJrxCDro0sJsWlRpQ==}
     dependencies:
       '@types/node': 20.11.16
-    dev: true
-
-  /@types/node@20.11.10:
-    resolution: {integrity: sha512-rZEfe/hJSGYmdfX9tvcPMYeYPW2sNl50nsw4jZmRcaG0HIAb0WYEpsB05GOb53vjqpyE9GUhlDQ4jLSoB5q9kg==}
-    dependencies:
-      undici-types: 5.26.5
     dev: true
 
   /@types/node@20.11.16:
@@ -838,7 +832,7 @@ packages:
   /@vitest/snapshot@1.2.2:
     resolution: {integrity: sha512-SmGY4saEw1+bwE1th6S/cZmPxz/Q4JWsl7LvbQIky2tKE35US4gd0Mjzqfr84/4OD0tikGWaWdMja/nWL5NIPA==}
     dependencies:
-      magic-string: 0.30.5
+      magic-string: 0.30.6
       pathe: 1.1.2
       pretty-format: 29.7.0
     dev: true
@@ -906,7 +900,7 @@ packages:
       postcss: ^8.1.0
     dependencies:
       browserslist: 4.22.3
-      caniuse-lite: 1.0.30001581
+      caniuse-lite: 1.0.30001583
       fraction.js: 4.3.7
       normalize-range: 0.1.2
       picocolors: 1.0.0
@@ -947,8 +941,8 @@ packages:
     engines: {node: ^6 || ^7 || ^8 || ^9 || ^10 || ^11 || ^12 || >=13.7}
     hasBin: true
     dependencies:
-      caniuse-lite: 1.0.30001581
-      electron-to-chromium: 1.4.648
+      caniuse-lite: 1.0.30001583
+      electron-to-chromium: 1.4.656
       node-releases: 2.0.14
       update-browserslist-db: 1.0.13(browserslist@4.22.3)
     dev: true
@@ -1005,13 +999,13 @@ packages:
     resolution: {integrity: sha512-bsTwuIg/BZZK/vreVTYYbSWoe2F+71P7K5QGEX+pT250DZbfU1MQ5prOKpPR+LL6uWKK3KMwMCAS74QB3Um1uw==}
     dependencies:
       browserslist: 4.22.3
-      caniuse-lite: 1.0.30001581
+      caniuse-lite: 1.0.30001583
       lodash.memoize: 4.1.2
       lodash.uniq: 4.5.0
     dev: true
 
-  /caniuse-lite@1.0.30001581:
-    resolution: {integrity: sha512-whlTkwhqV2tUmP3oYhtNfaWGYHDdS3JYFQBKXxcUR9qqPWsRhFHhoISO2Xnl/g0xyKzht9mI1LZpiNWfMzHixQ==}
+  /caniuse-lite@1.0.30001583:
+    resolution: {integrity: sha512-acWTYaha8xfhA/Du/z4sNZjHUWjkiuoAi2LM+T/aL+kemKQgPT1xBb/YKjlQ0Qo8gvbHsGNplrEJ+9G3gL7i4Q==}
     dev: true
 
   /chai@4.4.1:
@@ -1319,8 +1313,8 @@ packages:
     engines: {node: '>=12'}
     dev: true
 
-  /electron-to-chromium@1.4.648:
-    resolution: {integrity: sha512-EmFMarXeqJp9cUKu/QEciEApn0S/xRcpZWuAm32U7NgoZCimjsilKXHRO9saeEW55eHZagIDg6XTUOv32w9pjg==}
+  /electron-to-chromium@1.4.656:
+    resolution: {integrity: sha512-9AQB5eFTHyR3Gvt2t/NwR0le2jBSUNwCnMbUCejFWHD+so4tH40/dRLgoE+jxlPeWS43XJewyvCv+I8LPMl49Q==}
     dev: true
 
   /entities@4.5.0:
@@ -1406,8 +1400,8 @@ packages:
       micromatch: 4.0.5
     dev: true
 
-  /fast-xml-parser@4.3.3:
-    resolution: {integrity: sha512-coV/D1MhrShMvU6D0I+VAK3umz6hUaxxhL0yp/9RjfiYUfAv14rDhGQL+PLForhMdr0wq3PiV07WtkkNjJjNHg==}
+  /fast-xml-parser@4.3.4:
+    resolution: {integrity: sha512-utnwm92SyozgA3hhH2I8qldf2lBqm6qHOICawRNRFu1qMe3+oqr+GcXjGqTmXTMGE5T4eC03kr/rlh5C1IRdZA==}
     hasBin: true
     dependencies:
       strnum: 1.0.5
@@ -1546,7 +1540,7 @@ packages:
     dependencies:
       dir-glob: 3.0.1
       fast-glob: 3.3.2
-      ignore: 5.3.0
+      ignore: 5.3.1
       merge2: 1.4.1
       slash: 4.0.0
     dev: true
@@ -1589,8 +1583,8 @@ packages:
     engines: {node: '>=16.17.0'}
     dev: true
 
-  /ignore@5.3.0:
-    resolution: {integrity: sha512-g7dmpshy+gD7mh88OC9NwSGTKoc3kyLAZQRU1mt53Aw/vnvfXnbC+F/7F7QoYVKbV+KNvJx8wArewKy1vXMtlg==}
+  /ignore@5.3.1:
+    resolution: {integrity: sha512-5Fytz/IraMjqpwfd34ke28PTVMjZjJG2MPn5t7OE4eUCUNf8BAa7b5WUS9/Qvr6mwOQS7Mk6vdsMno5he+T8Xw==}
     engines: {node: '>= 4'}
     dev: true
 
@@ -1754,8 +1748,8 @@ packages:
       yallist: 4.0.0
     dev: true
 
-  /magic-string@0.30.5:
-    resolution: {integrity: sha512-7xlpfBaQaP/T6Vh8MO/EqXSW5En6INHEvEXQiuff7Gku0PWjU3uf6w/j9o7O+SpB5fOAkrI5HeoNgwjEO0pFsA==}
+  /magic-string@0.30.6:
+    resolution: {integrity: sha512-n62qCLbPjNjyo+owKtveQxZFZTBm+Ms6YoGD23Wew6Vw337PElFNifQpknPruVRQV57kVShPnLGo9vWxVhpPvA==}
     engines: {node: '>=12'}
     dependencies:
       '@jridgewell/sourcemap-codec': 1.4.15
@@ -2429,7 +2423,7 @@ packages:
       rollup: ^3.29.4 || ^4
       typescript: ^4.5 || ^5.0
     dependencies:
-      magic-string: 0.30.5
+      magic-string: 0.30.6
       rollup: 3.29.4
       typescript: 5.3.3
     optionalDependencies:
@@ -2744,7 +2738,7 @@ packages:
       globby: 13.2.2
       hookable: 5.5.3
       jiti: 1.21.0
-      magic-string: 0.30.5
+      magic-string: 0.30.6
       mkdist: 1.4.0(typescript@5.3.3)
       mlly: 1.5.0
       pathe: 1.1.2
@@ -2773,7 +2767,7 @@ packages:
     hasBin: true
     dependencies:
       '@babel/core': 7.23.9
-      '@babel/standalone': 7.23.9
+      '@babel/standalone': 7.23.10
       '@babel/types': 7.23.9
       defu: 6.1.4
       jiti: 1.21.0
@@ -2921,7 +2915,7 @@ packages:
       debug: 4.3.4
       execa: 8.0.1
       local-pkg: 0.5.0
-      magic-string: 0.30.5
+      magic-string: 0.30.6
       pathe: 1.1.2
       picocolors: 1.0.0
       std-env: 3.7.0
@@ -2963,7 +2957,7 @@ packages:
       '@buttercup/fetch': 0.1.2
       base-64: 1.0.0
       byte-length: 1.0.2
-      fast-xml-parser: 4.3.3
+      fast-xml-parser: 4.3.4
       he: 1.2.0
       hot-patcher: 2.0.1
       layerr: 2.0.1
