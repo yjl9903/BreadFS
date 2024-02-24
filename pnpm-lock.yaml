@@ -74,8 +74,8 @@ importers:
         specifier: workspace:*
         version: link:../core
       webdav:
-        specifier: ^5.3.2
-        version: 5.3.2
+        specifier: ^5.4.0
+        version: 5.4.0
     devDependencies:
       '@breadc/death':
         specifier: 0.9.7
@@ -301,8 +301,8 @@ packages:
     resolution: {integrity: sha512-eIWHb5Hrnd5j/RLSgbY1mtRPECMSjRbqlxZmlG+mgNi0h0YNieaS86EYsIHxnPT+J682N/OE7LoHSVDTRmp6jw==}
     dev: true
 
-  /@buttercup/fetch@0.1.2:
-    resolution: {integrity: sha512-mDBtsysQ0Gnrp4FamlRJGpu7HUHwbyLC4uUav1I7QAqThFAa/4d1cdZCxrV5gKvh6zO1fu95bILNJi4Y2hALhQ==}
+  /@buttercup/fetch@0.2.1:
+    resolution: {integrity: sha512-sCgECOx8wiqY8NN1xN22BqqKzXYIG2AicNLlakOAI4f0WgyLVUbAigMf8CZhBtJxdudTcB1gD5lciqi44jwJvg==}
     optionalDependencies:
       node-fetch: 3.3.2
     dev: false
@@ -2961,11 +2961,11 @@ packages:
       xml-js-builder: 1.0.3
     dev: true
 
-  /webdav@5.3.2:
-    resolution: {integrity: sha512-wfUh68rccDcH1A9W5gdcAflBm0EOeXrX3LwKbdDLWR0SDFE5QTPfLXPkDit+zGC0tRihCD9qzPfIVEUFoc7MwA==}
+  /webdav@5.4.0:
+    resolution: {integrity: sha512-QCvHbzDvr1NKldx0lUHo2Z8Hc+dgvfORNP+a7Da8TRXVJXYTMIa3UKEwXIgkl8iVQUl4cJvU5EaT8hQ5HlfgPQ==}
     engines: {node: '>=14'}
     dependencies:
-      '@buttercup/fetch': 0.1.2
+      '@buttercup/fetch': 0.2.1
       base-64: 1.0.0
       byte-length: 1.0.2
       fast-xml-parser: 4.3.4
