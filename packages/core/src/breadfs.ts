@@ -229,11 +229,18 @@ export class BreadFS<P extends BreadFSProvider<string> = BreadFSProvider<string>
               const read = this.createReadStream(src, options.fallback.stream.read);
 
               const writeOptions = { ...options.fallback.stream.write };
-              const srcStat = options.fallback.stream?.contentLength
-                ? await this.stat(src).catch(() => undefined)
-                : undefined;
-              if (srcStat && srcStat.size) {
-                writeOptions.contentLength = Number(srcStat.size);
+              const srcStat =
+                options.fallback.stream?.contentLength || options.fallback.stream?.onProgress
+                  ? await this.stat(src).catch(() => undefined)
+                  : undefined;
+              if (options.fallback.stream?.contentLength) {
+                if (srcStat && typeof srcStat.size === 'number') {
+                  writeOptions.contentLength = srcStat.size;
+                } else if (srcStat && typeof srcStat.size === 'bigint') {
+                  writeOptions.contentLength = Number(srcStat.size);
+                } else {
+                  throw new Error(`Can not get file size of ${src}`);
+                }
               }
 
               const write =
@@ -241,7 +248,32 @@ export class BreadFS<P extends BreadFSProvider<string> = BreadFSProvider<string>
                   ? this.createWriteStream(dst, writeOptions)
                   : dst.fs.createWriteStream(dst, writeOptions);
 
-              await read.pipeTo(write);
+              if (options.fallback.stream.onProgress) {
+                let transformed = 0;
+                const total = srcStat?.size ? Number(srcStat.size) : undefined;
+                const onProgress = options.fallback.stream.onProgress;
+
+                await read
+                  .pipeThrough(
+                    new TransformStream({
+                      start() {
+                        transformed = 0;
+                      },
+                      transform(chunk, controller) {
+                        try {
+                          transformed += chunk.length;
+                          onProgress({ src, current: transformed, total });
+                        } catch {
+                        } finally {
+                          controller.enqueue(chunk);
+                        }
+                      }
+                    })
+                  )
+                  .pipeTo(write);
+              } else {
+                await read.pipeTo(write);
+              }
             } else {
               // Use readFile and writeFile to implement copy
               const contents = await this.readFile(src, options.fallback?.file?.read);
@@ -327,18 +359,51 @@ export class BreadFS<P extends BreadFSProvider<string> = BreadFSProvider<string>
               const read = this.createReadStream(src, options.fallback.stream.read);
 
               const writeOptions = { ...options.fallback.stream.write };
-              const srcStat = options.fallback.stream?.contentLength
-                ? await this.stat(src).catch(() => undefined)
-                : undefined;
-              if (srcStat && srcStat.size) {
-                writeOptions.contentLength = Number(srcStat.size);
+              const srcStat =
+                options.fallback.stream?.contentLength || options.fallback.stream?.onProgress
+                  ? await this.stat(src).catch(() => undefined)
+                  : undefined;
+              if (options.fallback.stream?.contentLength) {
+                if (srcStat && typeof srcStat.size === 'number') {
+                  writeOptions.contentLength = srcStat.size;
+                } else if (srcStat && typeof srcStat.size === 'bigint') {
+                  writeOptions.contentLength = Number(srcStat.size);
+                } else {
+                  throw new Error(`Can not get file size of ${src}`);
+                }
               }
               const write =
                 typeof dst === 'string'
                   ? this.createWriteStream(dst, writeOptions)
                   : dst.fs.createWriteStream(dst, writeOptions);
 
-              await read.pipeTo(write);
+              if (options.fallback.stream.onProgress) {
+                let transformed = 0;
+                const total = srcStat?.size ? Number(srcStat.size) : undefined;
+                const onProgress = options.fallback.stream.onProgress;
+
+                await read
+                  .pipeThrough(
+                    new TransformStream({
+                      start() {
+                        transformed = 0;
+                      },
+                      transform(chunk, controller) {
+                        try {
+                          transformed += chunk.length;
+                          onProgress({ src, current: transformed, total });
+                        } catch {
+                        } finally {
+                          controller.enqueue(chunk);
+                        }
+                      }
+                    })
+                  )
+                  .pipeTo(write);
+              } else {
+                await read.pipeTo(write);
+              }
+
               await this.remove(src, options.fallback.file?.remove);
             } else {
               // Use readFile and writeFile to implement move file

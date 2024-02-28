@@ -21,7 +21,14 @@ const remoteFile = alist.path('/aliyundriver/README.md');
 
 await localFile.copyTo(remoteFile, {
   overwrite: true,
-  fallback: { stream: { contentLength: true } }
+  fallback: {
+    stream: {
+      contentLength: true,
+      onProgress(payload) {
+        console.log(payload);
+      }
+    }
+  }
 });
 
 // Wait for alist to process?

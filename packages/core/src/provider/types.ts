@@ -86,6 +86,12 @@ export interface RemoveOptions {
   retryDelay?: number | undefined;
 }
 
+type CopyMoveProgressHandler = (payload: {
+  src: string;
+  current: number;
+  total: number | undefined;
+}) => void;
+
 export interface CopyOptions {
   /**
    * Dereference symlinks.
@@ -136,6 +142,8 @@ export interface CopyOptions {
       write?: WriteStreamOptions;
 
       contentLength?: boolean;
+
+      onProgress?: CopyMoveProgressHandler;
     };
   };
 }
@@ -171,6 +179,8 @@ export interface MoveOptions {
       write?: WriteStreamOptions;
 
       contentLength?: boolean;
+
+      onProgress?: CopyMoveProgressHandler;
     };
   };
 }
