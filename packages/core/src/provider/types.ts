@@ -21,7 +21,9 @@ export interface StreamOptions {
 
 export interface ReadStreamOptions extends StreamOptions {}
 
-export interface WriteStreamOptions extends StreamOptions {}
+export interface WriteStreamOptions extends StreamOptions {
+  contentLength?: number;
+}
 
 export type ProgressHandler = (payload: { current: number; total: number }) => void;
 
@@ -132,6 +134,8 @@ export interface CopyOptions {
       read?: ReadStreamOptions;
 
       write?: WriteStreamOptions;
+
+      contentLength?: boolean;
     };
   };
 }
@@ -165,6 +169,8 @@ export interface MoveOptions {
       read?: ReadStreamOptions;
 
       write?: WriteStreamOptions;
+
+      contentLength?: boolean;
     };
   };
 }

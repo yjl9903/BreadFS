@@ -12,7 +12,8 @@ import type {
   MakeDirectoryOptions,
   ReadFileOptions,
   WriteFileOptions,
-  RawFileStat
+  RawFileStat,
+  WriteStreamOptions
 } from '@breadfs/core';
 
 export type { Headers, OAuthToken, WebDAVClient, WebDAVClientOptions } from 'webdav';
@@ -43,8 +44,17 @@ export class WebDAVProvider implements BreadFSProvider<'webdav'> {
     return Readable.toWeb(stream) as ReadableStream<Uint8Array>;
   }
 
-  public createWriteStream(path: string) {
-    const stream = this.client.createWriteStream(path, { overwrite: true });
+  public createWriteStream(path: string, options: WriteStreamOptions) {
+    const headers: Record<string, string> = {};
+    if (options.contentLength) {
+      headers['Content-Length'] = `${options.contentLength}`;
+    }
+
+    const stream = this.client.createWriteStream(path, {
+      overwrite: true,
+      headers
+    });
+
     return Writable.toWeb(stream) as WritableStream;
   }
 

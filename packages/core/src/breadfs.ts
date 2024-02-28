@@ -227,10 +227,20 @@ export class BreadFS<P extends BreadFSProvider<string> = BreadFSProvider<string>
             if (options.fallback?.stream) {
               // Use stream to implement copy
               const read = this.createReadStream(src, options.fallback.stream.read);
+
+              const writeOptions = { ...options.fallback.stream.write };
+              const srcStat = options.fallback.stream?.contentLength
+                ? await this.stat(src).catch(() => undefined)
+                : undefined;
+              if (srcStat && srcStat.size) {
+                writeOptions.contentLength = Number(srcStat.size);
+              }
+
               const write =
                 typeof dst === 'string'
-                  ? this.createWriteStream(dst, options.fallback.stream.write)
-                  : dst.fs.createWriteStream(dst, options.fallback.stream.write);
+                  ? this.createWriteStream(dst, writeOptions)
+                  : dst.fs.createWriteStream(dst, writeOptions);
+
               await read.pipeTo(write);
             } else {
               // Use readFile and writeFile to implement copy
@@ -315,10 +325,19 @@ export class BreadFS<P extends BreadFSProvider<string> = BreadFSProvider<string>
             if (options.fallback?.stream) {
               // Use stream to implement move file
               const read = this.createReadStream(src, options.fallback.stream.read);
+
+              const writeOptions = { ...options.fallback.stream.write };
+              const srcStat = options.fallback.stream?.contentLength
+                ? await this.stat(src).catch(() => undefined)
+                : undefined;
+              if (srcStat && srcStat.size) {
+                writeOptions.contentLength = Number(srcStat.size);
+              }
               const write =
                 typeof dst === 'string'
-                  ? this.createWriteStream(dst, options.fallback.stream.write)
-                  : dst.fs.createWriteStream(dst, options.fallback.stream.write);
+                  ? this.createWriteStream(dst, writeOptions)
+                  : dst.fs.createWriteStream(dst, writeOptions);
+
               await read.pipeTo(write);
               await this.remove(src, options.fallback.file?.remove);
             } else {

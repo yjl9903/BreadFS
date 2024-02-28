@@ -11,7 +11,26 @@ const alist = BreadFS.of(
   })
 );
 
-const contents = await local.path('README.md').readFile();
-await alist.path('/aliyundriver/README.md').writeFile(contents);
-console.log(await alist.path('/aliyundriver/README.md').readText());
-await alist.path('/aliyundriver/README.md').remove();
+// const localFile = local.path('/Users/xlor/Desktop/sakura/sakura-13b-lnovel-v0.9b-Q2_K.gguf');
+// const remoteFile = alist.path('/aliyundriver/sakura-13b-lnovel-v0.9b-Q2_K.gguf');
+const localFile = local.path('README.md');
+const remoteFile = alist.path('/aliyundriver/README.md');
+
+// const contents = await localFile.readFile();
+// await remoteFile.writeFile(contents);
+
+await localFile.copyTo(remoteFile, {
+  overwrite: true,
+  fallback: { stream: { contentLength: true } }
+});
+
+// Wait for alist to process?
+await new Promise((res) => {
+  setTimeout(() => {
+    res(undefined);
+  }, 1000);
+});
+
+console.log(await remoteFile.readText());
+
+await remoteFile.remove();
