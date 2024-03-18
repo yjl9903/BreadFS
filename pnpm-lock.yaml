@@ -74,8 +74,8 @@ importers:
         specifier: workspace:*
         version: link:../core
       webdav:
-        specifier: ^5.4.0
-        version: 5.4.0
+        specifier: ^5.5.0
+        version: 5.5.0
     devDependencies:
       '@breadc/death':
         specifier: 0.9.7
@@ -2961,8 +2961,8 @@ packages:
       xml-js-builder: 1.0.3
     dev: true
 
-  /webdav@5.4.0:
-    resolution: {integrity: sha512-QCvHbzDvr1NKldx0lUHo2Z8Hc+dgvfORNP+a7Da8TRXVJXYTMIa3UKEwXIgkl8iVQUl4cJvU5EaT8hQ5HlfgPQ==}
+  /webdav@5.5.0:
+    resolution: {integrity: sha512-SHSDe6n8lBuwwyX+uePB1N1Yn35ebd3locl/LbADMWpcEoowyFdIbnH3fv17T4Jf2tOa1Vwjr/Lld3t0dOio1w==}
     engines: {node: '>=14'}
     dependencies:
       '@buttercup/fetch': 0.2.1
