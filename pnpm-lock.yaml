@@ -74,8 +74,8 @@ importers:
         specifier: workspace:*
         version: link:../core
       webdav:
-        specifier: ^5.7.0
-        version: 5.7.0
+        specifier: ^5.7.1
+        version: 5.7.1
     devDependencies:
       '@breadc/death':
         specifier: 0.9.7
@@ -1346,13 +1346,13 @@ packages:
     resolution: {integrity: sha512-vqiC06CuhBTUdZH+RYl8sFrL096vA45Ok5ISO6sE/Mr1jRbGH4Csnhi8f3wKVl7x8mO4Au7Ir9D3Oyv1VYMFJw==}
     engines: {node: '>=12'}
 
-  minimatch@10.0.1:
-    resolution: {integrity: sha512-ethXTt3SGGR+95gudmqJ1eNhRO7eGEGIgYA9vnPatK4/etz2MEVDno5GMCibdMTuBMyElzIlgxMna3K94XDIDQ==}
-    engines: {node: 20 || >=22}
-
   minimatch@5.1.6:
     resolution: {integrity: sha512-lKwV/1brpG6mBUFHtb7NUmtABCb2WZZmm2wNiOA5hAb8VdCS4B3dtMWyvcoViccwAW/COERjXLt0zP1zXUN26g==}
     engines: {node: '>=10'}
+
+  minimatch@9.0.5:
+    resolution: {integrity: sha512-G6T0ZX48xgozx7587koeX9Ys2NYy6Gmv//P89sEte9V9whIapMNF4idKxnW2QtCcLiTWlb/wfCabAtAFWhhBow==}
+    engines: {node: '>=16 || 14 >=14.17'}
 
   minipass@3.3.6:
     resolution: {integrity: sha512-DxiNidxSEK+tHG6zOIklvNOwm3hvCrbUrdtzY74U6HKTJxvIDfOUL5W5P2Ghd3DTkhhKPYGqeNUIh5qcM4YBfw==}
@@ -1987,8 +1987,8 @@ packages:
     resolution: {integrity: sha512-0iHdrOzlKGFD96bTvPF8IIEfxw9Q7jB5LqWqhjyBYsofD6T6mOYqWtAvR88VY9Mq0xeg8bCRHC2Vifc9iuTYuw==}
     engines: {node: '>= 4'}
 
-  webdav@5.7.0:
-    resolution: {integrity: sha512-jmdARXy26UGDRw6uxn9KK7l6BDqshMxnB5LVBxWVlchwQmECXSwNWX81oEp/WaZwYsyzTOR92wt6uxZDpDsxEA==}
+  webdav@5.7.1:
+    resolution: {integrity: sha512-JVPn3nLxXJfHSRvennHsOrDYjFLkilZ1Qlw8Ff6hpqp6AvkgF7a//aOh5wA4rMp+sLZ1Km0V+iv0LyO1FIwtXg==}
     engines: {node: '>=16'}
 
   which@2.0.2:
@@ -3154,11 +3154,11 @@ snapshots:
 
   mimic-fn@4.0.0: {}
 
-  minimatch@10.0.1:
+  minimatch@5.1.6:
     dependencies:
       brace-expansion: 2.0.1
 
-  minimatch@5.1.6:
+  minimatch@9.0.5:
     dependencies:
       brace-expansion: 2.0.1
 
@@ -3768,7 +3768,7 @@ snapshots:
       mime-types: 2.1.35
       xml-js-builder: 1.0.3
 
-  webdav@5.7.0:
+  webdav@5.7.1:
     dependencies:
       '@buttercup/fetch': 0.2.1
       base-64: 1.0.0
@@ -3778,7 +3778,7 @@ snapshots:
       hot-patcher: 2.0.1
       layerr: 3.0.0
       md5: 2.3.0
-      minimatch: 10.0.1
+      minimatch: 9.0.5
       nested-property: 4.0.0
       node-fetch: 3.3.2
       path-posix: 1.0.0
