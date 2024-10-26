@@ -6,7 +6,7 @@
 Unified File System Abstraction.
 
 + Frequently used **file system operation API**
-+ **Operate files cross across different file systems**
++ **Operate files across different file systems**
 + [Node.js fs module](https://nodejs.org/api/fs.html) provider
 + [WebDAV client](https://github.com/perry-mitchell/webdav-client) provider
 
