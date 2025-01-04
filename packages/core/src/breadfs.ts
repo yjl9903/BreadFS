@@ -166,7 +166,7 @@ export class BreadFS<P extends BreadFSProvider<string> = BreadFSProvider<string>
       } else {
         // const encoding = typeof options === 'string' ? options : options.encoding;
         const buffer = new TextEncoder().encode(content);
-        await this.writeFile(path, buffer.buffer as Buffer);
+        await this.writeFile(path, buffer.buffer as any);
       }
     });
   }

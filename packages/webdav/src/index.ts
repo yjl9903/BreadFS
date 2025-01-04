@@ -79,7 +79,7 @@ export class WebDAVProvider implements BreadFSProvider<'webdav'> {
     buffer: Uint8Array,
     options: WriteFileOptions
   ): Promise<void> {
-    await this.client.putFileContents(path, buffer, {
+    await this.client.putFileContents(path, buffer as Buffer, {
       overwrite: true,
       onUploadProgress: options.onProgress
         ? (ev) => {
