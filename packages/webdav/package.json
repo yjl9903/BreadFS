@@ -49,7 +49,7 @@
   "devDependencies": {
     "@breadc/death": "0.9.7",
     "@breadfs/node": "workspace:*",
-    "get-port-please": "^3.1.2",
+    "get-port-please": "^3.2.0",
     "webdav-server": "^2.6.2"
   },
   "engines": {
