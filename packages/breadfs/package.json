@@ -24,19 +24,19 @@
   "type": "module",
   "exports": {
     ".": {
-      "require": "./dist/index.cjs",
+      "types": "./dist/index.d.ts",
       "import": "./dist/index.mjs",
-      "types": "./dist/index.d.ts"
+      "require": "./dist/index.cjs"
     },
     "./node": {
-      "require": "./dist/node.cjs",
+      "types": "./dist/node.d.ts",
       "import": "./dist/node.mjs",
-      "types": "./dist/node.d.ts"
+      "require": "./dist/node.cjs"
     },
     "./webdav": {
-      "require": "./dist/webdav.cjs",
+      "types": "./dist/webdav.d.ts",
       "import": "./dist/webdav.mjs",
-      "types": "./dist/webdav.d.ts"
+      "require": "./dist/webdav.cjs"
     }
   },
   "main": "dist/index.cjs",

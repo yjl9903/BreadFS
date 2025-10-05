@@ -2,7 +2,9 @@ export class BreadFSError extends Error {
   private readonly _raw: unknown;
 
   public constructor(raw: unknown) {
-    super(raw instanceof Error ? raw.message : 'unknown error');
+    super(raw instanceof Error ? raw.message : 'unknown error', {
+      cause: raw instanceof Error ? raw.cause : raw
+    });
     this._raw = raw;
   }
 
