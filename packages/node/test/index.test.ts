@@ -35,7 +35,12 @@ describe('File System', () => {
 
   it('should list', async () => {
     const monorepo = fs.path('../');
-    expect((await monorepo.list()).map((p) => p.toString()).sort()).toMatchInlineSnapshot(`
+    expect(
+      (await monorepo.list())
+        .map((p) => p.toString())
+        .filter((p) => !p.endsWith('.DS_Store'))
+        .sort()
+    ).toMatchInlineSnapshot(`
       [
         "../breadfs",
         "../core",
@@ -47,7 +52,12 @@ describe('File System', () => {
 
   it('should list stat', async () => {
     const monorepo = fs.path('../');
-    expect((await monorepo.listStat()).map((p) => p.path.toString()).sort()).toMatchInlineSnapshot(`
+    expect(
+      (await monorepo.listStat())
+        .map((p) => p.path.toString())
+        .filter((p) => !p.endsWith('.DS_Store'))
+        .sort()
+    ).toMatchInlineSnapshot(`
       [
         "../breadfs",
         "../core",
@@ -73,7 +83,7 @@ describe('File System', () => {
       `);
   });
 
-  it('should list recursive', async () => {
+  it('should list stat recursive', async () => {
     const core = fs.path('../core/src');
     expect((await core.listStat({ recursive: true })).map((p) => p.path.toString()).sort())
       .toMatchInlineSnapshot(`

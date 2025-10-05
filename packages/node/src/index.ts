@@ -113,7 +113,7 @@ export class NodeProvider implements BreadFSProvider<'node'> {
     const dirs = await fs.readdir(path, { ...options, withFileTypes: true });
 
     return dirs.map((stat) => ({
-      path: pathe.join(stat.path, stat.name),
+      path: pathe.join(stat.parentPath, stat.name),
       size: undefined,
       isFile: () => stat.isFile(),
       isDirectory: () => stat.isDirectory(),
