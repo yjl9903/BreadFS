@@ -44,6 +44,7 @@ describe('File System', () => {
       [
         "../breadfs",
         "../core",
+        "../mem",
         "../node",
         "../webdav",
       ]
@@ -61,6 +62,7 @@ describe('File System', () => {
       [
         "../breadfs",
         "../core",
+        "../mem",
         "../node",
         "../webdav",
       ]

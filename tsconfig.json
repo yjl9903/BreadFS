@@ -19,11 +19,17 @@
       "breadfs": [
         "./packages/breadfs/src/index.ts"
       ],
+      "breadfs/mem": [
+        "./packages/breadfs/src/mem.ts"
+      ],
       "breadfs/node": [
         "./packages/breadfs/src/node.ts"
       ],
       "@breadfs/core": [
         "./packages/core/src/index.ts"
+      ],
+      "@breadfs/mem": [
+        "./packages/mem/src/index.ts"
       ],
       "@breadfs/node": [
         "./packages/node/src/index.ts"

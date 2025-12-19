@@ -1,14 +1,13 @@
 {
-  "name": "breadfs",
+  "name": "@breadfs/mem",
   "version": "0.1.9",
-  "description": "Unified File System Abstraction",
+  "description": "In-memory BreadFS provider powered by memfs",
   "keywords": [
     "fs",
     "file system",
-    "fs-extra",
-    "node",
-    "webdav",
-    "breadfs"
+    "breadfs",
+    "memfs",
+    "memory"
   ],
   "homepage": "https://github.com/yjl9903/breadfs#readme",
   "bugs": {
@@ -27,51 +26,25 @@
       "types": "./dist/index.d.ts",
       "import": "./dist/index.mjs",
       "require": "./dist/index.cjs"
-    },
-    "./mem": {
-      "types": "./dist/mem.d.ts",
-      "import": "./dist/mem.mjs",
-      "require": "./dist/mem.cjs"
-    },
-    "./node": {
-      "types": "./dist/node.d.ts",
-      "import": "./dist/node.mjs",
-      "require": "./dist/node.cjs"
-    },
-    "./webdav": {
-      "types": "./dist/webdav.d.ts",
-      "import": "./dist/webdav.mjs",
-      "require": "./dist/webdav.cjs"
     }
   },
   "main": "dist/index.cjs",
   "module": "dist/index.mjs",
   "types": "dist/index.d.ts",
-  "typesVersions": {
-    "*": {
-      "*": [
-        "./dist/*",
-        "./*"
-      ]
-    }
-  },
   "files": [
     "dist"
   ],
   "scripts": {
     "build": "unbuild",
     "format": "prettier --write src/**/*.ts test/**/*.ts",
-    "test": "vitest --typecheck",
-    "test:ci": "vitest --run --typecheck",
+    "test": "vitest",
+    "test:ci": "vitest --run",
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
     "@breadfs/core": "workspace:*",
-    "@breadfs/node": "workspace:*"
-  },
-  "optionalDependencies": {
-    "@breadfs/webdav": "workspace:*",
-    "@breadfs/mem": "workspace:*"
+    "memfs": "^4.0.0",
+    "pathe": "^2.0.3"
   },
   "engines": {
     "node": ">=v20.6.1"
