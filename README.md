@@ -24,6 +24,7 @@ await local.writeText('This is from local file system')
 const mfs = MemFS.make()
 const mem = mfs.path('hello.txt')
 await mfs.writeText('This is from in-memory')
+await mfs.zip() // create zip archive
 
 // Create WebDAV file system
 const wfs = WebDAVFS.make("https://some-server.org", {

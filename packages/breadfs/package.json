@@ -67,11 +67,11 @@
   },
   "dependencies": {
     "@breadfs/core": "workspace:*",
+    "@breadfs/mem": "workspace:*",
     "@breadfs/node": "workspace:*"
   },
   "optionalDependencies": {
-    "@breadfs/webdav": "workspace:*",
-    "@breadfs/mem": "workspace:*"
+    "@breadfs/webdav": "workspace:*"
   },
   "engines": {
     "node": ">=v20.6.1"

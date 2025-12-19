@@ -12,13 +12,23 @@ npm i breadfs @breadfs/mem
 ## Usage
 
 ```ts
-import { MemFS } from '@breadfs/mem'
 import { BreadFS } from '@breadfs/core'
+import { MemProvider } from '@breadfs/mem'
 
-const fs = BreadFS.of(MemFS)
+const fs = BreadFS.of(new MemProvider())
 
 await fs.path('/example.txt').writeText('hello')
 await fs.path('/example.txt').readText()
+```
+
+```ts
+import { BreadFS } from '@breadfs/core'
+import { MemProvider } from '@breadfs/mem'
+
+const fs = BreadFS.of(new MemProvider())
+await fs.path('/notes.txt').writeText('hello')
+
+const zipped = await fs.provider.zip('/')
 ```
 
 ## License

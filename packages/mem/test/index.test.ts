@@ -2,6 +2,8 @@ import { describe, it, expect } from 'vitest';
 
 import { BreadFS } from '@breadfs/core';
 
+import { unzipSync } from 'fflate';
+
 import { MemProvider } from '../src';
 
 describe('MemFS provider', () => {
@@ -45,5 +47,22 @@ describe('MemFS provider', () => {
     await dst.moveTo(moved);
     expect(await moved.readText()).toBe('hello');
     expect(await dst.exists()).toBeFalsy();
+  });
+
+  it('should zip directory', async () => {
+    const fs = BreadFS.of(new MemProvider());
+
+    const root = fs.path('/zip');
+    await root.mkdir();
+    await root.join('file.txt').writeText('hello');
+    await root.join('dir').mkdir();
+    await root.join('dir', 'nested.txt').writeText('world');
+
+    const zipped = await fs.provider.zip('/zip');
+    const unzipped = unzipSync(zipped);
+
+    expect(Object.keys(unzipped).sort()).toEqual(['dir/', 'dir/nested.txt', 'file.txt']);
+    expect(new TextDecoder().decode(unzipped['file.txt'])).toBe('hello');
+    expect(new TextDecoder().decode(unzipped['dir/nested.txt'])).toBe('world');
   });
 });

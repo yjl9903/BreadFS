@@ -1,5 +1,5 @@
 import { BreadFS } from '@breadfs/core';
-import { MemProvider, type MemProviderOptions } from '@breadfs/mem';
+import { MemProvider, MemZipOptions, type MemProviderOptions } from '@breadfs/mem';
 
 export * from '@breadfs/core';
 
@@ -12,5 +12,9 @@ export class MemFS extends BreadFS<MemProvider> {
 
   public static make(options: MemProviderOptions = {}) {
     return new MemFS(options);
+  }
+
+  public zip(path?: string, options?: MemZipOptions) {
+    return this.provider.zip(path, options);
   }
 }

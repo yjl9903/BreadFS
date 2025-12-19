@@ -1,6 +1,8 @@
+import type { Zippable, ZipOptions } from 'fflate';
 import type { DirectoryJSON, DirectoryContent } from 'memfs/lib/core';
 
 import pathe from 'pathe';
+import { zipSync } from 'fflate';
 import { Readable, Writable } from 'node:stream';
 
 import { type IFs, Volume, createFsFromVolume } from 'memfs';
@@ -40,6 +42,51 @@ export interface MemProviderOptions {
   cwd?: string;
 }
 
+export interface MemZipOptions extends ZipOptions {
+  /**
+   * Include the root directory name in the ZIP output.
+   * Defaults to false.
+   */
+  includeRoot?: boolean;
+}
+
+const toZipParts = (path: string): string[] => {
+  return path
+    .replace(/\\/g, '/')
+    .split('/')
+    .filter((part) => part.length > 0);
+};
+
+const ensureZipDir = (root: Zippable, path: string): Zippable => {
+  const parts = toZipParts(path);
+  let cursor = root;
+
+  for (const part of parts) {
+    const next = cursor[part];
+    if (next instanceof Uint8Array || Array.isArray(next)) {
+      throw new Error(`Can not create directory over file: ${path}`);
+    }
+    if (!next) {
+      cursor[part] = {};
+    }
+    cursor = cursor[part] as Zippable;
+  }
+
+  return cursor;
+};
+
+const setZipFile = (root: Zippable, path: string, data: Uint8Array) => {
+  const parts = toZipParts(path);
+  const name = parts.pop();
+  if (!name) return;
+
+  const dir = ensureZipDir(root, parts.join('/'));
+  if (dir[name] && !(dir[name] instanceof Uint8Array)) {
+    throw new Error(`Can not create file over directory: ${path}`);
+  }
+  dir[name] = data;
+};
+
 export class MemProvider implements BreadFSProvider<'mem'> {
   public readonly name = 'mem';
 
@@ -58,6 +105,10 @@ export class MemProvider implements BreadFSProvider<'mem'> {
 
     this.fs = createFsFromVolume(this.volume) as MemFSInstance;
     this.promises = this.fs.promises;
+  }
+
+  public static of(options: MemProviderOptions = {}) {
+    return new MemProvider(options);
   }
 
   public createReadStream(path: string, options: ReadStreamOptions) {
@@ -184,5 +235,43 @@ export class MemProvider implements BreadFSProvider<'mem'> {
     }
 
     return results;
+  }
+
+  public async zip(path: string = '/', options: MemZipOptions = {}): Promise<Uint8Array> {
+    const { includeRoot = false, ...zipOptions } = options;
+    const rootPath = pathe.normalize(path);
+    const rootStat = await this.stat(rootPath, {});
+
+    const zippable: Zippable = {};
+
+    if (rootStat.isFile()) {
+      const name = pathe.basename(rootPath);
+      if (!name) {
+        throw new Error('Can not zip unnamed root file');
+      }
+      zippable[name] = await this.readFile(rootPath, {});
+      return zipSync(zippable, zipOptions);
+    }
+
+    const rootName = includeRoot && pathe.basename(rootPath) ? pathe.basename(rootPath) : '';
+    const base = rootName ? ensureZipDir(zippable, rootName) : zippable;
+
+    const entries = await this.listStat(rootPath, { recursive: true });
+    for (const entry of entries) {
+      const relative = pathe.relative(rootPath, entry.path);
+      if (!relative || relative === '.') continue;
+
+      if (entry.isDirectory()) {
+        ensureZipDir(base, relative);
+        continue;
+      }
+
+      if (entry.isFile()) {
+        const data = await this.readFile(entry.path, {});
+        setZipFile(base, relative, data);
+      }
+    }
+
+    return zipSync(zippable, zipOptions);
   }
 }
