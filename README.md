@@ -9,14 +9,21 @@ Unified File System Abstraction.
 + **Operate files across different file systems**
 + [Node.js fs module](https://nodejs.org/api/fs.html) provider
 + [WebDAV client](https://github.com/perry-mitchell/webdav-client) provider
++ [In-Memory file system](https://github.com/streamich/memfs) provider
 
 ```ts
 import { fs as nfs } from 'breadfs/node'
+import { MemFS } from 'breadfs/mem'
 import { WebDAVFS } from 'breadfs/webdav'
 
 // Write something to hello.txt
 const local = nfs.path('hello.txt')
-await local.writeText('This is used for testing')
+await local.writeText('This is from local file system')
+
+// Create in-memory file system
+const mfs = MemFS.make()
+const mem = mfs.path('hello.txt')
+await mfs.writeText('This is from in-memory')
 
 // Create WebDAV file system
 const wfs = WebDAVFS.make("https://some-server.org", {
