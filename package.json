@@ -24,7 +24,7 @@
     "vite-tsconfig-paths": "^6.0.3",
     "vitest": "^4.0.16"
   },
-  "packageManager": "pnpm@10.26.1",
+  "packageManager": "pnpm@10.26.2",
   "engines": {
     "node": ">=v20.6.1"
   }
