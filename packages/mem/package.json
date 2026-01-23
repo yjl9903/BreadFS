@@ -44,7 +44,7 @@
   "dependencies": {
     "@breadfs/core": "workspace:*",
     "fflate": "^0.8.2",
-    "memfs": "^4.51.1",
+    "memfs": "^4.56.10",
     "pathe": "^2.0.3"
   },
   "engines": {
