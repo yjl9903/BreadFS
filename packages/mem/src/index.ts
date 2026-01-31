@@ -1,5 +1,4 @@
 import type { Zippable, ZipOptions } from 'fflate';
-import type { DirectoryJSON, DirectoryContent } from 'memfs/lib/core';
 
 import pathe from 'pathe';
 import { zipSync } from 'fflate';
@@ -26,6 +25,16 @@ import type {
 type FsPromises = typeof import('fs/promises');
 
 type MemFSInstance = IFs & { promises: FsPromises };
+
+type DirectoryContent = string | Buffer | null;
+
+interface DirectoryJSON<T extends DirectoryContent = DirectoryContent> {
+  [key: string]: T;
+}
+
+// interface NestedDirectoryJSON<T extends DirectoryContent = DirectoryContent> {
+//   [key: string]: T | NestedDirectoryJSON;
+// }
 
 export interface MemProviderOptions {
   /**
@@ -154,11 +163,7 @@ export class MemProvider implements BreadFSProvider<'mem'> {
     await this.fs.promises.writeFile(path, buffer, { encoding: options.encoding });
   }
 
-  public writeFileSync(
-    path: string,
-    buffer: Buffer | Uint8Array,
-    options: WriteFileOptions
-  ): void {
+  public writeFileSync(path: string, buffer: Buffer | Uint8Array, options: WriteFileOptions): void {
     this.fs.writeFileSync(path, buffer, { encoding: options.encoding });
   }
 
@@ -175,17 +180,13 @@ export class MemProvider implements BreadFSProvider<'mem'> {
       throw new Error('copySync is not supported by current memfs instance');
     }
 
-    this.fs.cpSync(
-      src,
-      dst,
-      {
-        dereference: options.dereference,
-        errorOnExist: options.errorOnExist,
-        force: options.overwrite,
-        preserveTimestamps: options.preserveTimestamps,
-        recursive: true
-      } as any
-    );
+    this.fs.cpSync(src, dst, {
+      dereference: options.dereference,
+      errorOnExist: options.errorOnExist,
+      force: options.overwrite,
+      preserveTimestamps: options.preserveTimestamps,
+      recursive: true
+    } as any);
   }
 
   public moveSync(src: string, dst: string, options: MoveOptions): void {
@@ -204,15 +205,11 @@ export class MemProvider implements BreadFSProvider<'mem'> {
     }
 
     if (typeof this.fs.cpSync === 'function' && typeof this.fs.rmSync === 'function') {
-      this.fs.cpSync(
-        src,
-        dst,
-        {
-          dereference: options.dereference,
-          force: true,
-          recursive: true
-        } as any
-      );
+      this.fs.cpSync(src, dst, {
+        dereference: options.dereference,
+        force: true,
+        recursive: true
+      } as any);
       this.fs.rmSync(src, { recursive: true, force: true } as any);
       return;
     }
