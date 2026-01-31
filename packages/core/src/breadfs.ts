@@ -25,17 +25,11 @@ export type FileStat<P extends BreadFSProvider<string>> = Prettify<
   { path: Path<P> } & Omit<RawFileStat, 'path'>
 >;
 
-type AcrossFileStat<T extends string | Path, P extends BreadFSProvider<string>> = T extends Path<
-  infer R
->
-  ? FileStat<R>
-  : FileStat<P>;
+type AcrossFileStat<T extends string | Path, P extends BreadFSProvider<string>> =
+  T extends Path<infer R> ? FileStat<R> : FileStat<P>;
 
-type AcrossPath<T extends string | Path, P extends BreadFSProvider<string>> = T extends Path<
-  infer R
->
-  ? Path<R>
-  : Path<P>;
+type AcrossPath<T extends string | Path, P extends BreadFSProvider<string>> =
+  T extends Path<infer R> ? Path<R> : Path<P>;
 
 export class BreadFS<P extends BreadFSProvider<string> = BreadFSProvider<string>> {
   public readonly provider: P;
@@ -1099,5 +1093,9 @@ export class Path<P extends BreadFSProvider<string> = BreadFSProvider<string>> {
   // Utils
   public toString(): string {
     return this._path;
+  }
+
+  public [Symbol.toStringTag](): string {
+    return this.toString();
   }
 }

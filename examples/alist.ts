@@ -1,5 +1,5 @@
-import { BreadFS } from '@breadfs/core';
 import { NodeFS } from '@breadfs/node';
+import { BreadFS } from '@breadfs/core';
 import { WebDAVProvider } from '@breadfs/webdav';
 
 const local = BreadFS.of(NodeFS);

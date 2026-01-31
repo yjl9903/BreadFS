@@ -89,11 +89,7 @@ export class NodeProvider implements BreadFSProvider<'node'> {
     await fs.writeFile(path, stream, { encoding: options.encoding });
   }
 
-  public writeFileSync(
-    path: string,
-    stream: Buffer | Uint8Array,
-    options: WriteFileOptions
-  ): void {
+  public writeFileSync(path: string, stream: Buffer | Uint8Array, options: WriteFileOptions): void {
     writeFileSync(path, stream, { encoding: options.encoding });
   }
 

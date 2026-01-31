@@ -36,6 +36,16 @@ importers:
         specifier: ^4.0.18
         version: 4.0.18(@types/node@24.10.9)(jiti@2.6.1)(yaml@2.8.2)
 
+  packages/aliyundrive:
+    dependencies:
+      '@breadfs/core':
+        specifier: workspace:*
+        version: link:../core
+    devDependencies:
+      '@breadfs/node':
+        specifier: workspace:*
+        version: link:../node
+
   packages/breadfs:
     dependencies:
       '@breadfs/core':
@@ -48,6 +58,9 @@ importers:
         specifier: workspace:*
         version: link:../node
     optionalDependencies:
+      '@breadfs/aliyundrive':
+        specifier: workspace:*
+        version: link:../aliyundrive
       '@breadfs/webdav':
         specifier: workspace:*
         version: link:../webdav

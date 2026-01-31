@@ -36,6 +36,9 @@
       ],
       "@breadfs/webdav": [
         "./packages/webdav/src/index.ts"
+      ],
+      "@breadfs/aliyundrive": [
+        "./packages/aliyundrive/src/index.ts"
       ]
     }
   },
