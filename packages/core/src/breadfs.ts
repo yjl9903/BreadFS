@@ -101,12 +101,43 @@ export class BreadFS<P extends BreadFSProvider<string> = BreadFSProvider<string>
     );
   }
 
+  public mkdirSync<T extends string | Path>(path: T, options: MakeDirectoryOptions = {}): void {
+    const resolved: MakeDirectoryOptions = { recursive: true, ...options };
+    return this.runSync(() =>
+      this.matchFS(
+        path,
+        (p) => {
+          if (!this.provider.mkdirSync) {
+            throw new Error('mkdirSync is not supported');
+          }
+          return this.provider.mkdirSync(p, resolved);
+        },
+        (p) => p.fs.mkdirSync(p, resolved)
+      )
+    );
+  }
+
   public async readFile(path: string | Path, options: ReadFileOptions = {}): Promise<Uint8Array> {
     return this.runAsync(() =>
       this.matchFS(
         path,
         (p) => this.provider.readFile(p, options),
         (p) => p.fs.readFile(p, options)
+      )
+    );
+  }
+
+  public readFileSync(path: string | Path, options: ReadFileOptions = {}): Uint8Array {
+    return this.runSync(() =>
+      this.matchFS(
+        path,
+        (p) => {
+          if (!this.provider.readFileSync) {
+            throw new Error('readFileSync is not supported');
+          }
+          return this.provider.readFileSync(p, options);
+        },
+        (p) => p.fs.readFileSync(p, options)
       )
     );
   }
@@ -134,6 +165,29 @@ export class BreadFS<P extends BreadFSProvider<string> = BreadFSProvider<string>
     });
   }
 
+  public readTextSync(
+    path: string | Path,
+    options: BufferEncoding | EncodingOptions = 'utf-8'
+  ): string {
+    return this.runSync(() => {
+      // @ts-expect-error
+      const resolved: EncodingOptions =
+        typeof options === 'string' ? { encoding: options } : options;
+      if (this.provider.readTextSync) {
+        return this.matchFS(
+          path,
+          (p) => this.provider.readTextSync!(p, resolved),
+          (p) => p.fs.readTextSync!(p, resolved)
+        );
+      } else {
+        const content = this.readFileSync(path, resolved);
+        const encoding = typeof options === 'string' ? options : options.encoding;
+        const decoder = new TextDecoder(encoding);
+        return decoder.decode(content);
+      }
+    });
+  }
+
   public async writeFile(
     path: string | Path,
     buffer: Buffer | Uint8Array,
@@ -144,6 +198,25 @@ export class BreadFS<P extends BreadFSProvider<string> = BreadFSProvider<string>
         path,
         (p) => this.provider.writeFile(p, buffer, options),
         (p) => p.fs.writeFile(p, buffer, options)
+      )
+    );
+  }
+
+  public writeFileSync(
+    path: string | Path,
+    buffer: Buffer | Uint8Array,
+    options: WriteFileOptions = {}
+  ): void {
+    this.runSync(() =>
+      this.matchFS(
+        path,
+        (p) => {
+          if (!this.provider.writeFileSync) {
+            throw new Error('writeFileSync is not supported');
+          }
+          return this.provider.writeFileSync(p, buffer, options);
+        },
+        (p) => p.fs.writeFileSync(p, buffer, options)
       )
     );
   }
@@ -171,6 +244,28 @@ export class BreadFS<P extends BreadFSProvider<string> = BreadFSProvider<string>
     });
   }
 
+  public writeTextSync(
+    path: string | Path,
+    content: string,
+    options: BufferEncoding | EncodingOptions = 'utf-8'
+  ): void {
+    this.runSync(() => {
+      if (this.provider.writeTextSync) {
+        // @ts-expect-error
+        const resolved: EncodingOptions =
+          typeof options === 'string' ? { encoding: options } : options;
+        this.matchFS(
+          path,
+          (p) => this.provider.writeTextSync!(p, content, resolved),
+          (p) => p.fs.writeTextSync!(p, content, resolved)
+        );
+      } else {
+        const buffer = new TextEncoder().encode(content);
+        this.writeFileSync(path, buffer.buffer as any);
+      }
+    });
+  }
+
   /**
    * Remove a file or a directory recursively.
    *
@@ -185,6 +280,22 @@ export class BreadFS<P extends BreadFSProvider<string> = BreadFSProvider<string>
         path,
         (p) => this.provider.remove(p, resolved),
         (p) => p.fs.remove(p, resolved)
+      )
+    );
+  }
+
+  public removeSync(path: string | Path, options: RemoveOptions = {}): void {
+    const resolved: RemoveOptions = { recursive: true, force: true, ...options };
+    this.runSync(() =>
+      this.matchFS(
+        path,
+        (p) => {
+          if (!this.provider.removeSync) {
+            throw new Error('removeSync is not supported');
+          }
+          return this.provider.removeSync(p, resolved);
+        },
+        (p) => p.fs.removeSync(p, resolved)
       )
     );
   }
@@ -315,6 +426,78 @@ export class BreadFS<P extends BreadFSProvider<string> = BreadFSProvider<string>
           }
         },
         (src) => src.fs.copy(src, dst)
+      )
+    );
+  }
+
+  public copySync(src: string | Path, dst: string | Path, options: CopyOptions = {}): void {
+    this.runSync(() =>
+      this.matchFS(
+        src,
+        (src) => {
+          const dstPath = typeof dst === 'string' ? dst : dst.path;
+          if (this.provider.copySync && (typeof dst === 'string' || this === dst.fs)) {
+            this.provider.copySync(src, dstPath, options);
+            return;
+          }
+
+          if (!options.overwrite && this.existsSync(dst)) {
+            throw new Error(`${dst} is existed`);
+          }
+
+          const copyFile = (src: string, dst: string | Path) => {
+            let dstStat: FileStat<P> | undefined;
+            try {
+              dstStat = this.statSync(dst) as FileStat<P>;
+            } catch {
+              dstStat = undefined;
+            }
+
+            if (dstStat && !dstStat.isFile()) {
+              throw new Error(`Can not copy file to directory ${dst}`);
+            }
+
+            const contents = this.readFileSync(src, options.fallback?.file?.read);
+            this.writeFileSync(dst, contents, options.fallback?.file?.write);
+          };
+
+          const srcStat = this.statSync(src);
+          if (srcStat.isFile()) {
+            copyFile(src, dst);
+          } else if (srcStat.isDirectory()) {
+            const copyDirectory = (src: string, dst: Path) => {
+              let dstStat: FileStat<P> | undefined;
+              try {
+                dstStat = this.statSync(dst) as FileStat<P>;
+              } catch {
+                dstStat = undefined;
+              }
+              if (dstStat) {
+                if (!dstStat.isDirectory()) {
+                  throw new Error(`Can not copy directory to file ${dst}`);
+                }
+              } else {
+                this.mkdirSync(dst);
+              }
+              const files = this.listStatSync(src);
+              for (const file of files) {
+                const name = file.path.basename;
+                if (file.isDirectory()) {
+                  copyDirectory(file.path.path, dst.join(name));
+                } else if (file.isFile()) {
+                  copyFile(file.path.path, dst.join(name));
+                } else {
+                  throw new Error('Not support copy other file types');
+                }
+              }
+            };
+
+            copyDirectory(src, typeof dst === 'string' ? new Path(this, dst) : dst);
+          } else {
+            throw new Error('Not support copy other file types');
+          }
+        },
+        (src) => src.fs.copySync(src, dst)
       )
     );
   }
@@ -452,12 +635,109 @@ export class BreadFS<P extends BreadFSProvider<string> = BreadFSProvider<string>
     );
   }
 
+  public moveSync(src: string | Path, dst: string | Path, options: MoveOptions = {}): void {
+    this.runSync(() =>
+      this.matchFS(
+        src,
+        (src) => {
+          const dstPath = typeof dst === 'string' ? dst : dst.path;
+          if (this.provider.moveSync && (typeof dst === 'string' || this === dst.fs)) {
+            this.provider.moveSync(src, dstPath, options);
+            return;
+          }
+
+          if (!options.overwrite && this.existsSync(dst)) {
+            throw new Error(`${dst} is existed`);
+          }
+
+          const moveFile = (src: string, dst: string | Path) => {
+            let dstStat: FileStat<P> | undefined;
+            try {
+              dstStat = this.statSync(dst) as FileStat<P>;
+            } catch {
+              dstStat = undefined;
+            }
+
+            if (dstStat && !dstStat.isFile()) {
+              throw new Error(`Can not move file to directory ${dst}`);
+            }
+
+            const contents = this.readFileSync(src, options.fallback?.file?.read);
+            this.writeFileSync(dst, contents, options.fallback?.file?.write);
+            this.removeSync(src, options.fallback?.file?.remove);
+          };
+
+          const srcStat = this.statSync(src);
+          if (srcStat.isFile()) {
+            moveFile(src, dst);
+          } else if (srcStat.isDirectory()) {
+            const moveDirectory = (src: string, dst: Path) => {
+              let dstStat: FileStat<P> | undefined;
+              try {
+                dstStat = this.statSync(dst) as FileStat<P>;
+              } catch {
+                dstStat = undefined;
+              }
+              if (dstStat) {
+                if (!dstStat.isDirectory()) {
+                  throw new Error(`Can not move directory to file ${dst}`);
+                }
+              } else {
+                this.mkdirSync(dst);
+              }
+              const files = this.listStatSync(src);
+              for (const file of files) {
+                const name = file.path.basename;
+                if (file.isDirectory()) {
+                  moveDirectory(file.path.path, dst.join(name));
+                } else if (file.isFile()) {
+                  moveFile(file.path.path, dst.join(name));
+                } else {
+                  throw new Error('Not support move other file types');
+                }
+              }
+              this.removeSync(src, options.fallback?.file?.remove);
+            };
+
+            moveDirectory(src, typeof dst === 'string' ? new Path(this, dst) : dst);
+          } else {
+            throw new Error('Not support move other file types');
+          }
+        },
+        (src) => src.fs.moveSync(src, dst)
+      )
+    );
+  }
+
   public async exists(path: string | Path): Promise<boolean> {
     return this.runAsync(() =>
       this.matchFS(
         path,
         (p) => this.provider.exists(p),
         (p) => p.fs.exists(p)
+      )
+    );
+  }
+
+  public existsSync(path: string | Path): boolean {
+    return this.runSync(() =>
+      this.matchFS(
+        path,
+        (p) => {
+          if (this.provider.existsSync) {
+            return this.provider.existsSync(p);
+          }
+          if (this.provider.statSync) {
+            try {
+              this.provider.statSync(p, {});
+              return true;
+            } catch {
+              return false;
+            }
+          }
+          throw new Error('existsSync is not supported');
+        },
+        (p) => p.fs.existsSync(p)
       )
     );
   }
@@ -483,6 +763,30 @@ export class BreadFS<P extends BreadFSProvider<string> = BreadFSProvider<string>
     );
   }
 
+  public statSync<T extends string | Path>(
+    path: T,
+    options: StatOptions = {}
+  ): AcrossFileStat<T, P> {
+    return this.runSync(() =>
+      this.matchFS(
+        path,
+        (p) => {
+          if (!this.provider.statSync) {
+            throw new Error('statSync is not supported');
+          }
+          const stat = this.provider.statSync(p, options) as unknown as AcrossFileStat<T, P>;
+          stat.path = typeof path === 'string' ? new Path(this, p) : path;
+          return stat;
+        },
+        (p) => {
+          const stat = p.fs.statSync(p, options) as AcrossFileStat<T, P>;
+          stat.path = p;
+          return stat;
+        }
+      )
+    );
+  }
+
   public async list<T extends string | Path>(
     path: T,
     options: ListOptions = {}
@@ -495,6 +799,22 @@ export class BreadFS<P extends BreadFSProvider<string> = BreadFSProvider<string>
           return files.map((sp) => this.path(sp) as AcrossPath<T, P>);
         },
         (root) => root.fs.list<T>(root as T, options) as Promise<AcrossPath<T, P>[]>
+      )
+    );
+  }
+
+  public listSync<T extends string | Path>(path: T, options: ListOptions = {}): AcrossPath<T, P>[] {
+    return this.runSync(() =>
+      this.matchFS(
+        path,
+        (root) => {
+          if (!this.provider.listSync) {
+            throw new Error('listSync is not supported');
+          }
+          const files = this.provider.listSync(root, options);
+          return files.map((sp) => this.path(sp) as AcrossPath<T, P>);
+        },
+        (root) => root.fs.listSync<T>(root as T, options) as AcrossPath<T, P>[]
       )
     );
   }
@@ -526,12 +846,36 @@ export class BreadFS<P extends BreadFSProvider<string> = BreadFSProvider<string>
     );
   }
 
+  public listStatSync<T extends string | Path>(
+    path: T,
+    options: ListOptions = {}
+  ): AcrossFileStat<T, P>[] {
+    return this.runSync(() =>
+      this.matchFS(
+        path,
+        (root) => {
+          if (this.provider.listStatSync) {
+            const files = this.provider.listStatSync(root, options);
+            return files.map((file) => {
+              const stat = file as unknown as AcrossFileStat<T, P>;
+              stat.path = this.path(file.path);
+              return stat as AcrossFileStat<T, P>;
+            });
+          }
+          const files = this.listSync(path, options);
+          return files.map((file) => this.statSync(file)) as unknown as AcrossFileStat<T, P>[];
+        },
+        (root) => root.fs.listStatSync(root, options) as AcrossFileStat<T, P>[]
+      )
+    );
+  }
+
   // ---
-  private matchFS<T extends string | Path, R extends {}>(
+  private matchFS<T extends string | Path, R>(
     path: T,
     match: (path: string) => R,
     miss: (path: Path) => R
-  ) {
+  ): R {
     if (typeof path === 'string') {
       return match(path);
     } else if (path.fs === this) {
@@ -611,36 +955,72 @@ export class Path<P extends BreadFSProvider<string> = BreadFSProvider<string>> {
     await this._fs.mkdir(this._path, options);
   }
 
+  public mkdirSync(options: MakeDirectoryOptions = {}): void {
+    this._fs.mkdirSync(this._path, options);
+  }
+
   public async ensureDir(options: MakeDirectoryOptions = {}): Promise<void> {
     await this._fs.mkdir(this._path, options);
+  }
+
+  public ensureDirSync(options: MakeDirectoryOptions = {}): void {
+    this._fs.mkdirSync(this._path, options);
   }
 
   public async stat(options: StatOptions = {}): Promise<FileStat<P>> {
     return this._fs.stat(this._path, options);
   }
 
+  public statSync(options: StatOptions = {}): FileStat<P> {
+    return this._fs.statSync(this._path, options);
+  }
+
   public async isFile(): Promise<boolean> {
     return (await this.stat()).isFile();
+  }
+
+  public isFileSync(): boolean {
+    return this.statSync().isFile();
   }
 
   public async isDirectory(): Promise<boolean> {
     return (await this.stat()).isDirectory();
   }
 
+  public isDirectorySync(): boolean {
+    return this.statSync().isDirectory();
+  }
+
   public async isSymbolicLink(): Promise<boolean> {
     return (await this.stat()).isSymbolicLink();
+  }
+
+  public isSymbolicLinkSync(): boolean {
+    return this.statSync().isSymbolicLink();
   }
 
   public async exists(): Promise<boolean> {
     return await this._fs.exists(this._path);
   }
 
+  public existsSync(): boolean {
+    return this._fs.existsSync(this._path);
+  }
+
   public async readFile(options: ReadFileOptions = {}): Promise<Uint8Array> {
     return this._fs.readFile(this._path, options);
   }
 
+  public readFileSync(options: ReadFileOptions = {}): Uint8Array {
+    return this._fs.readFileSync(this._path, options);
+  }
+
   public async readText(options: BufferEncoding | EncodingOptions = 'utf-8'): Promise<string> {
     return this._fs.readText(this._path, options);
+  }
+
+  public readTextSync(options: BufferEncoding | EncodingOptions = 'utf-8'): string {
+    return this._fs.readTextSync(this._path, options);
   }
 
   public async readJSON<T>(): Promise<T> {
@@ -652,11 +1032,19 @@ export class Path<P extends BreadFSProvider<string> = BreadFSProvider<string>> {
     return this._fs.writeFile(this._path, buffer, options);
   }
 
+  public writeFileSync(buffer: Uint8Array, options: WriteFileOptions = {}): void {
+    return this._fs.writeFileSync(this._path, buffer, options);
+  }
+
   public async writeText(
     content: string,
     options: BufferEncoding | EncodingOptions = 'utf-8'
   ): Promise<void> {
     await this._fs.writeText(this._path, content, options);
+  }
+
+  public writeTextSync(content: string, options: BufferEncoding | EncodingOptions = 'utf-8'): void {
+    this._fs.writeTextSync(this._path, content, options);
   }
 
   public async writeJSON<T>(
@@ -672,20 +1060,40 @@ export class Path<P extends BreadFSProvider<string> = BreadFSProvider<string>> {
     await this._fs.copy(this, dst, options);
   }
 
+  public copyToSync(dst: string | Path, options: CopyOptions = {}): void {
+    this._fs.copySync(this, dst, options);
+  }
+
   public async moveTo(dst: string | Path, options: MoveOptions = {}): Promise<void> {
     await this._fs.move(this, dst, options);
+  }
+
+  public moveToSync(dst: string | Path, options: MoveOptions = {}): void {
+    this._fs.moveSync(this, dst, options);
   }
 
   public async remove(options: RemoveOptions = {}): Promise<void> {
     await this._fs.remove(this._path, options);
   }
 
+  public removeSync(options: RemoveOptions = {}): void {
+    this._fs.removeSync(this._path, options);
+  }
+
   public async list(options: ListOptions = {}): Promise<Path<P>[]> {
     return await this._fs.list(this._path, options);
   }
 
+  public listSync(options: ListOptions = {}): Path<P>[] {
+    return this._fs.listSync(this._path, options);
+  }
+
   public async listStat(options: ListOptions = {}): Promise<FileStat<P>[]> {
     return await this._fs.listStat(this._path, options);
+  }
+
+  public listStatSync(options: ListOptions = {}): FileStat<P>[] {
+    return this._fs.listStatSync(this._path, options);
   }
 
   // Utils
