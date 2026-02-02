@@ -42,6 +42,7 @@ describe('File System', () => {
         .sort()
     ).toMatchInlineSnapshot(`
       [
+        "../aliyundrive",
         "../breadfs",
         "../core",
         "../mem",
@@ -60,6 +61,7 @@ describe('File System', () => {
         .sort()
     ).toMatchInlineSnapshot(`
       [
+        "../aliyundrive",
         "../breadfs",
         "../core",
         "../mem",
