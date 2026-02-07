@@ -35,7 +35,7 @@ import { Path } from '@breadfs/core';
 
 // @ts-ignore
 Path.prototype[inspect.custom] = function () {
-  return this.toString();
+  return `"${this.fs.provider.name}://${this.toString()}"`;
 };
 
 export class NodeProvider implements BreadFSProvider<'node'> {
