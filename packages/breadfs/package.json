@@ -24,29 +24,34 @@
   "type": "module",
   "exports": {
     ".": {
-      "types": "./dist/index.d.ts",
+      "types": "./dist/index.d.mts",
       "import": "./dist/index.mjs",
       "require": "./dist/index.cjs"
     },
     "./mem": {
-      "types": "./dist/mem.d.ts",
+      "types": "./dist/mem.d.mts",
       "import": "./dist/mem.mjs",
       "require": "./dist/mem.cjs"
     },
     "./node": {
-      "types": "./dist/node.d.ts",
+      "types": "./dist/node.d.mts",
       "import": "./dist/node.mjs",
       "require": "./dist/node.cjs"
     },
     "./webdav": {
-      "types": "./dist/webdav.d.ts",
+      "types": "./dist/webdav.d.mts",
       "import": "./dist/webdav.mjs",
       "require": "./dist/webdav.cjs"
+    },
+    "./aliyundrive": {
+      "types": "./dist/aliyundrive.d.mts",
+      "import": "./dist/aliyundrive.mjs",
+      "require": "./dist/aliyundrive.cjs"
     }
   },
   "main": "dist/index.cjs",
   "module": "dist/index.mjs",
-  "types": "dist/index.d.ts",
+  "types": "dist/index.d.mts",
   "typesVersions": {
     "*": {
       "*": [
@@ -59,8 +64,7 @@
     "dist"
   ],
   "scripts": {
-    "build": "unbuild",
-    "format": "prettier --write src/**/*.ts test/**/*.ts",
+    "build": "tsdown",
     "test": "vitest --typecheck",
     "test:ci": "vitest --run --typecheck",
     "typecheck": "tsc --noEmit"

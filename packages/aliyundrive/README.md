@@ -9,6 +9,19 @@
 npm i breadfs @breadfs/aliyundrive
 ```
 
+## Usage
+
+```ts
+import { WebDAVFS } from 'breadfs/aliyundrive'
+
+const wfs = WebDAVFS.make("https://some-server.org", {
+    username: "user",
+    password: "pass"
+})
+
+await wfs.path('/test.txt').readText()
+```
+
 ## License
 
 MIT License © 2023 [XLor](https://github.com/yjl9903)

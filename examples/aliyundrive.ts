@@ -1,14 +1,10 @@
 import 'dotenv/config';
 
-import { BreadFS } from 'breadfs';
+import { AliyundriveFS } from 'breadfs/aliyundrive';
 
-import { AliyunDriveProvider } from '../packages/aliyundrive/src/index';
-
-const fs = new BreadFS(
-  new AliyunDriveProvider({
-    refresh: { token: process.env.ALIYUNDRIVE_REFRESH_TOKEN! }
-  })
-);
+const fs = new AliyundriveFS({
+  refresh: { token: process.env.ALIYUNDRIVE_REFRESH_TOKEN! }
+});
 
 const resp = await fs.list('/anime/');
 console.log(resp);
