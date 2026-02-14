@@ -113,6 +113,8 @@ const resp = await fs.list('/anime/');
 console.log(resp)
 ```
 
+Thanks to [OpenList](https://github.com/OpenListTeam/OpenList) (previous [AList](https://github.com/AlistGo/alist)) for the original implementation and refresh token service.
+
 ### Operating files across different file systems
 
 ```ts
