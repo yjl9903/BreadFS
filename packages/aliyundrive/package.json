@@ -1,6 +1,6 @@
 {
   "name": "@breadfs/aliyundrive",
-  "version": "0.1.10",
+  "version": "0.1.11",
   "description": "阿里云盘 provider for BreadFS",
   "keywords": [
     "fs",
