@@ -19,7 +19,6 @@ import type {
 import type {
   AlipanType,
   AliyunDriveProviderOptions,
-  AliyunDriveRefreshMode,
   CreateResponse,
   DriveInfoResponse,
   ErrResp,
@@ -31,17 +30,13 @@ import type {
   MoveCopyResponse,
   OrderBy,
   OrderDirection,
-  RemoveWay
+  RemoveMethod,
+  AliyunDriveRefreshMode
 } from './types';
 
-import {
-  API_URL_DEFAULT,
-  ONLINE_REFRESH_URL_DEFAULT,
-  TOKEN_ERROR_CODES,
-  globalLimiterUserId
-} from './constants';
 import { AliyunDriveError } from './error';
 import { AliyunLimiter, LimiterType, getLimiterForUser } from './limiter';
+import { API_URL_DEFAULT, TOKEN_ERROR_CODES, globalLimiterUserId } from './constants';
 import {
   concatChunks,
   getItemName,
@@ -66,7 +61,7 @@ type ResolvedOptions = {
   rootId: string;
   orderBy?: OrderBy;
   orderDirection?: OrderDirection;
-  removeWay: RemoveWay;
+  removeMethod: RemoveMethod;
   rapidUpload: boolean;
   internalUpload: boolean;
   livpDownloadFormat: LivpDownloadFormat;
@@ -80,7 +75,7 @@ const resolveOptions = (options: AliyunDriveProviderOptions): ResolvedOptions =>
     rootId: options.rootId ?? 'root',
     orderBy: options.orderBy,
     orderDirection: options.orderDirection,
-    removeWay: options.removeWay ?? 'trash',
+    removeMethod: options.removeMethod ?? 'trash',
     rapidUpload: options.rapidUpload ?? false,
     internalUpload: options.internalUpload ?? false,
     livpDownloadFormat: options.livpDownloadFormat ?? 'jpeg'
@@ -88,11 +83,11 @@ const resolveOptions = (options: AliyunDriveProviderOptions): ResolvedOptions =>
 
   const refresh = options.refresh;
   const token = refresh.token;
-  const mode = refresh.mode ?? 'online';
-  const onlineEndpoint = refresh.online?.endpoint ?? ONLINE_REFRESH_URL_DEFAULT;
-  const onlineType = refresh.online?.type ?? 'default';
-  const clientId = refresh.local?.clientId;
-  const clientSecret = refresh.local?.clientSecret;
+  const mode = 'clientId' in refresh && 'clientSecret' in refresh ? 'local' : 'online';
+  const onlineEndpoint = 'endpoint' in refresh ? refresh?.endpoint : undefined;
+  const onlineType = ('type' in refresh ? refresh?.type : undefined) ?? 'default';
+  const clientId = 'clientId' in refresh ? refresh?.clientId : undefined;
+  const clientSecret = 'clientSecret' in refresh ? refresh?.clientSecret : undefined;
 
   if (!token) {
     throw new Error('refresh token is required');
@@ -107,7 +102,7 @@ const resolveOptions = (options: AliyunDriveProviderOptions): ResolvedOptions =>
     refresh: {
       token,
       mode,
-      onlineEndpoint,
+      onlineEndpoint: onlineEndpoint!,
       onlineType,
       clientId,
       clientSecret
@@ -169,8 +164,8 @@ export class AliyunDriveProvider implements BreadFSProvider<'aliyundrive'> {
   }
 
   public createWriteStream(pathInput: string, options: WriteStreamOptions) {
-    const chunks: Uint8Array[] = [];
     let length = 0;
+    const chunks: Uint8Array[] = [];
 
     return new WritableStream<Uint8Array>({
       write(chunk) {
@@ -378,7 +373,7 @@ export class AliyunDriveProvider implements BreadFSProvider<'aliyundrive'> {
     }
 
     const uri =
-      this.options.removeWay === 'delete'
+      this.options.removeMethod === 'delete'
         ? '/adrive/v1.0/openFile/delete'
         : '/adrive/v1.0/openFile/recyclebin/trash';
     await this.request(LimiterType.Other, uri, 'POST', {

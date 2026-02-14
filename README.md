@@ -6,10 +6,11 @@
 Unified File System Abstraction.
 
 + Frequently used **file system operation API**
-+ **Operate files across different file systems**
-+ [Node.js fs module](https://nodejs.org/api/fs.html) provider
-+ [WebDAV client](https://github.com/perry-mitchell/webdav-client) provider
++ **Operating files across different file systems**
 + [In-Memory file system](https://github.com/streamich/memfs) provider
++ [Node.js fs module](https://nodejs.org/api/fs.html) provider
++ [WebDAV](https://github.com/perry-mitchell/webdav-client) provider
++ [阿里云盘](https://www.alipan.com/) provider
 
 ```ts
 import { fs as nfs } from 'breadfs/node'
@@ -67,9 +68,13 @@ await nfs.path('/home/test.txt').writeText('This is used for testing')
 
 ### WebDAV
 
+Installtion:
+
 ```bash
 npm i breadfs @breadfs/webdav
 ```
+
+Usage:
 
 ```ts
 import { WebDAVFS } from 'breadfs/webdav'
@@ -82,7 +87,33 @@ const wfs = WebDAVFS.make("https://some-server.org", {
 await wfs.path('/test.txt').readText()
 ```
 
-### Across different file systems
+### 阿里云盘
+
+Installtion:
+
+```bash
+npm i breadfs @breadfs/aliyundrive
+```
+
+Usage:
+
+> You can follow this [OpenList docs](https://doc.oplist.org.cn/guide/drivers/aliyundrive_open) and [OpenList Token 获取工具](https://api.oplist.org/) to get the aliyundrive refresh token.
+
+```ts
+import { AliyundriveFS } from 'breadfs/aliyundrive'
+
+const fs = new AliyundriveFS({
+  refresh: {
+    token: process.env.ALIYUNDRIVE_REFRESH_TOKEN!,
+    endpoint: 'https://api.oplist.org/alicloud/renewapi'
+  }
+})
+
+const resp = await fs.list('/anime/');
+console.log(resp)
+```
+
+### Operating files across different file systems
 
 ```ts
 import { fs as nfs } from 'breadfs/node'
@@ -106,7 +137,7 @@ So that the goal of this package is to provide **a straightforward abstraction a
 
 ## Related
 
-This package is used to power [AnimeSpace](https://github.com/yjl9903/AnimeSpace), offering a comprehensive solution for automatically following bangumis. It can fetch anime resources, download desired video content, and upload them to the local file system or remote WebDAV server. The upload process is facilitated by this package.
+This package is used to power [AnimeSpace](https://github.com/yjl9903/AnimeGarden), offering a comprehensive solution for automatically following bangumis. It can fetch anime resources, download desired video content, and upload them to the local file system or remote WebDAV server. The upload process is facilitated by this package.
 
 ## License
 

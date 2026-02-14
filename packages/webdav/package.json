@@ -1,7 +1,7 @@
 {
   "name": "@breadfs/webdav",
   "version": "0.1.10",
-  "description": "Unified File System Abstraction",
+  "description": "WebDAV client provider for BreadFS",
   "keywords": [
     "fs",
     "file system",
@@ -46,7 +46,7 @@
     "webdav": "^5.9.0"
   },
   "devDependencies": {
-    "@breadc/death": "0.9.7",
+    "@breadc/death": "1.0.0-beta.8",
     "@breadfs/node": "workspace:*",
     "get-port-please": "^3.2.0",
     "webdav-server": "^2.6.2"

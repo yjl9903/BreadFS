@@ -1,7 +1,7 @@
 {
   "name": "@breadfs/mem",
   "version": "0.1.10",
-  "description": "In-memory BreadFS provider powered by memfs",
+  "description": "In-Memory file system provider for BreadFS",
   "keywords": [
     "fs",
     "file system",

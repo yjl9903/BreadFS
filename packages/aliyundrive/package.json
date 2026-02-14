@@ -1,7 +1,7 @@
 {
   "name": "@breadfs/aliyundrive",
   "version": "0.1.10",
-  "description": "Unified File System Abstraction",
+  "description": "阿里云盘 provider for BreadFS",
   "keywords": [
     "fs",
     "file system",

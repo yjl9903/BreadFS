@@ -11,15 +11,20 @@ npm i breadfs @breadfs/aliyundrive
 
 ## Usage
 
-```ts
-import { WebDAVFS } from 'breadfs/aliyundrive'
+> You can follow this [OpenList docs](https://doc.oplist.org.cn/guide/drivers/aliyundrive_open) and [OpenList Token 获取工具](https://api.oplist.org/) to get the aliyundrive refresh token.
 
-const wfs = WebDAVFS.make("https://some-server.org", {
-    username: "user",
-    password: "pass"
+```ts
+import { AliyundriveFS } from 'breadfs/aliyundrive'
+
+const fs = new AliyundriveFS({
+  refresh: {
+    token: process.env.ALIYUNDRIVE_REFRESH_TOKEN!,
+    endpoint: 'https://api.oplist.org/alicloud/renewapi'
+  }
 })
 
-await wfs.path('/test.txt').readText()
+const resp = await fs.list('/anime/');
+console.log(resp)
 ```
 
 ## License
