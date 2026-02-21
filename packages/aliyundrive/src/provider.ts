@@ -609,6 +609,10 @@ export class AliyunDriveProvider implements BreadFSProvider<'aliyundrive'> {
         url.searchParams.set('driver_txt', driverTxt);
 
         const res = await fetch(url.toString());
+        if (!res.ok) {
+          throw new Error(`failed to request ${url.toString()}`);
+        }
+
         const data = (await res.json()) as {
           refresh_token?: string;
           access_token?: string;
@@ -640,6 +644,10 @@ export class AliyunDriveProvider implements BreadFSProvider<'aliyundrive'> {
           refresh_token: this.refreshTokenValue
         })
       });
+      if (!res.ok) {
+        throw new Error(`failed to request ${this.options.apiUrl}/oauth/access_token`);
+      }
+
       const data = (await res.json()) as ErrResp & {
         refresh_token?: string;
         access_token?: string;
@@ -706,6 +714,9 @@ export class AliyunDriveProvider implements BreadFSProvider<'aliyundrive'> {
       headers,
       body: body ? JSON.stringify(body) : undefined
     });
+    if (!res.ok) {
+      throw new Error(`failed to request ${this.options.apiUrl}${uri}`);
+    }
 
     const text = await res.text();
     let data: ErrResp & Record<string, unknown> = {};
