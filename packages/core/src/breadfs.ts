@@ -928,6 +928,15 @@ export class Path<P extends BreadFSProvider<string> = BreadFSProvider<string>> {
     return pathe.extname(this._path);
   }
 
+  public get isAbsolute(): boolean {
+    return pathe.isAbsolute(this._path);
+  }
+
+  public relative(to: string | Path): Path<P> {
+    const relative = pathe.relative(this._path, typeof to === 'string' ? to : to._path);
+    return new Path(this._fs, relative);
+  }
+
   public join(...pieces: string[]): Path<P> {
     return new Path(this._fs, pathe.join(this._path, ...pieces));
   }
