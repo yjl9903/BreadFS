@@ -13,7 +13,7 @@
     "preversion": "turbo run test:ci"
   },
   "devDependencies": {
-    "@types/node": "^24.10.14",
+    "@types/node": "^24.10.15",
     "breadc": "^1.0.0-beta.12",
     "bumpp": "latest",
     "dotenv": "^17.3.1",
