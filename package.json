@@ -22,7 +22,7 @@
     "typescript": "^6.0.2",
     "vite": "^8.0.3",
     "vite-tsconfig-paths": "^6.1.1",
-    "vitest": "^4.1.1"
+    "vitest": "^4.1.2"
   },
   "packageManager": "pnpm@10.33.0",
   "engines": {
