@@ -12,8 +12,8 @@ importers:
         specifier: ^24.12.2
         version: 24.12.2
       breadc:
-        specifier: ^1.0.0-beta.14
-        version: 1.0.0-beta.14
+        specifier: ^1.0.0-beta.15
+        version: 1.0.0-beta.15
       bumpp:
         specifier: latest
         version: 11.0.1
@@ -115,8 +115,8 @@ importers:
         version: 5.9.0
     devDependencies:
       '@breadc/death':
-        specifier: 1.0.0-beta.14
-        version: 1.0.0-beta.14
+        specifier: 1.0.0-beta.15
+        version: 1.0.0-beta.15
       '@breadfs/node':
         specifier: workspace:*
         version: link:../node
@@ -150,17 +150,17 @@ packages:
     resolution: {integrity: sha512-mOm5ZrYmphGfqVWoH5YYMTITb3cDXsFgmvFlvkvWDMsR9X8RFnt7a0Wb6yNIdoFsiMO9WjYLq+U/FMtqIYAF8Q==}
     engines: {node: ^20.19.0 || >=22.12.0}
 
-  '@breadc/color@1.0.0-beta.14':
-    resolution: {integrity: sha512-qDPyBTteKTh0Aco0SS3VaRZLpbNe+SacrcCYxzio4bpIqyWLB5NPhlh3ec/vKx/1jRE2Lnx1Egixk95tenlwjg==}
+  '@breadc/color@1.0.0-beta.15':
+    resolution: {integrity: sha512-+MsvbAa/FItcwQNwnI8btpsOkhl5C1ls51doerSVS3bXgBovQ/0n0hIW6U1RkPbqQQIajHpFMXrjA5A/qwBrJg==}
 
-  '@breadc/core@1.0.0-beta.14':
-    resolution: {integrity: sha512-B8QqbgRniLarRNuYM2XVHTIlFhek1BBiCz7JisJ4mrOqJA64VjAZ5b57jRYyW9pwX4XitvOr1PiEQfnV1+vZ7g==}
+  '@breadc/core@1.0.0-beta.15':
+    resolution: {integrity: sha512-nLVdjVVZrhqJ0JDNn9uMsQFVcseBknTdmyXj4UOi7EnleN0YT1p3ofs1sjYx7HB5Kd35l0XtX2CAQ1Qom31ssQ==}
 
-  '@breadc/death@1.0.0-beta.14':
-    resolution: {integrity: sha512-9Jtb2C9/myeoiK5hV7TKlRhkh44cRIah9iURkSgHC5lhm83L5gKkh9F7ajNXVbZzza9bqr5ufGoUn83oX6E42w==}
+  '@breadc/death@1.0.0-beta.15':
+    resolution: {integrity: sha512-cerDS3oXK18CtUusg2Jy2hxdYTdz5sk4bGIVZW9nLLPiT7l+ehxMnEjxuYv9GnvBv8olG0NSgbchxlhAPWNZRQ==}
 
-  '@breadc/tui@1.0.0-beta.14':
-    resolution: {integrity: sha512-tccdf7KJUcpv6F65A7VexJrJTacXxmXYNwStHZPwy/fuQSddi4ys1vaIHqYHXl5t+oT5UcyzjuUMh0hKKw0q5Q==}
+  '@breadc/tui@1.0.0-beta.15':
+    resolution: {integrity: sha512-WL7jP+BCecQsLQ4iwv2Y0GswcGuRAwY82axo7+DvuksZqG79gWSTuBHRKOAbnFjLf3KOyR1c4wIJS/5QP1GhbA==}
 
   '@buttercup/fetch@0.2.1':
     resolution: {integrity: sha512-sCgECOx8wiqY8NN1xN22BqqKzXYIG2AicNLlakOAI4f0WgyLVUbAigMf8CZhBtJxdudTcB1gD5lciqi44jwJvg==}
@@ -641,8 +641,8 @@ packages:
   brace-expansion@2.0.3:
     resolution: {integrity: sha512-MCV/fYJEbqx68aE58kv2cA/kiky1G8vux3OR6/jbS+jIMe/6fJWa0DTzJU7dqijOWYwHi1t29FlfYI9uytqlpA==}
 
-  breadc@1.0.0-beta.14:
-    resolution: {integrity: sha512-KheU3MWALgKxfQ6xsPJQIB4E2QbER+nQEvpV1cTWpdsNZu9geY4aGWizrPrC6tzYfQ4q59XLvApdxDkQTleU0Q==}
+  breadc@1.0.0-beta.15:
+    resolution: {integrity: sha512-q2Odd3daDlwDENFv0s1oeVMIrsdXJuMItwo4ejKhL59sCYQmPeI/s+76URas9I6mZQxUbR4S99LyKolcgh3m7w==}
 
   bumpp@11.0.1:
     resolution: {integrity: sha512-X0ti27I/ewsx/u0EJSyl0IZWWOE95q+wIpAG/60kc5gqMNR4a23YJdd3lL7JsBN11TgLbCM4KpfGMuFfdigb4g==}
@@ -1281,17 +1281,17 @@ snapshots:
       '@babel/helper-string-parser': 8.0.0-rc.3
       '@babel/helper-validator-identifier': 8.0.0-rc.3
 
-  '@breadc/color@1.0.0-beta.14': {}
+  '@breadc/color@1.0.0-beta.15': {}
 
-  '@breadc/core@1.0.0-beta.14':
+  '@breadc/core@1.0.0-beta.15':
     dependencies:
-      '@breadc/color': 1.0.0-beta.14
+      '@breadc/color': 1.0.0-beta.15
 
-  '@breadc/death@1.0.0-beta.14': {}
+  '@breadc/death@1.0.0-beta.15': {}
 
-  '@breadc/tui@1.0.0-beta.14':
+  '@breadc/tui@1.0.0-beta.15':
     dependencies:
-      '@breadc/color': 1.0.0-beta.14
+      '@breadc/color': 1.0.0-beta.15
       get-east-asian-width: 1.5.0
       std-env: 4.0.0
       strip-ansi: 7.2.0
@@ -1696,12 +1696,12 @@ snapshots:
     dependencies:
       balanced-match: 1.0.2
 
-  breadc@1.0.0-beta.14:
+  breadc@1.0.0-beta.15:
     dependencies:
-      '@breadc/color': 1.0.0-beta.14
-      '@breadc/core': 1.0.0-beta.14
-      '@breadc/death': 1.0.0-beta.14
-      '@breadc/tui': 1.0.0-beta.14
+      '@breadc/color': 1.0.0-beta.15
+      '@breadc/core': 1.0.0-beta.15
+      '@breadc/death': 1.0.0-beta.15
+      '@breadc/tui': 1.0.0-beta.15
 
   bumpp@11.0.1:
     dependencies:
