@@ -19,7 +19,7 @@
     "dotenv": "^17.4.2",
     "tsdown": "^0.21.9",
     "turbo": "^2.9.6",
-    "typescript": "^6.0.2",
+    "typescript": "^6.0.3",
     "vite": "^8.0.8",
     "vite-tsconfig-paths": "^6.1.1",
     "vitest": "^4.1.4"
