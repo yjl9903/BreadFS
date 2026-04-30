@@ -1,6 +1,6 @@
 {
   "name": "@breadfs/node",
-  "version": "0.1.12",
+  "version": "0.1.13",
   "description": "Node.js fs module provider for BreadFS",
   "keywords": [
     "fs",
