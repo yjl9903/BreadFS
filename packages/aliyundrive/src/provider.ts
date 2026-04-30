@@ -609,24 +609,37 @@ export class AliyunDriveProvider implements BreadFSProvider<'aliyundrive'> {
         url.searchParams.set('driver_txt', driverTxt);
 
         const res = await fetch(url.toString());
-        if (!res.ok) {
-          throw new Error(`failed to request ${url.toString()}`);
-        }
 
-        const data = (await res.json()) as {
-          refresh_token?: string;
-          access_token?: string;
-          text?: string;
-        };
-        if (!data.refresh_token || !data.access_token) {
-          if (data.text) {
-            throw new Error(`failed to refresh token: ${data.text}`);
+        let error: Error | undefined;
+
+        try {
+          const data = (await res.json()) as {
+            refresh_token?: string;
+            access_token?: string;
+            text?: string;
+          };
+
+          if (!data.refresh_token || !data.access_token) {
+            if (data.text) {
+              error = new Error(`failed to refresh token: ${data.text}`);
+            } else {
+              error = new Error('empty token returned from online API');
+            }
+            throw error;
           }
-          throw new Error('empty token returned from online API');
+
+          this.refreshTokenValue = data.refresh_token;
+          this.accessToken = data.access_token;
+        } catch (error2) {
+          if (error) {
+            throw error;
+          } else if (!res.ok) {
+            throw new Error(`failed to request ${url.toString()}`);
+          } else {
+            throw error2;
+          }
         }
 
-        this.refreshTokenValue = data.refresh_token;
-        this.accessToken = data.access_token;
         return;
       }
 
