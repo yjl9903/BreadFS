@@ -43,7 +43,7 @@
   },
   "dependencies": {
     "@breadfs/core": "workspace:*",
-    "webdav": "^5.9.0"
+    "webdav": "^5.10.0"
   },
   "devDependencies": {
     "@breadc/death": "1.0.0-beta.15",
