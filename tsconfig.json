@@ -25,6 +25,12 @@
       "breadfs/node": [
         "./packages/breadfs/src/node.ts"
       ],
+      "breadfs/webdav": [
+        "./packages/breadfs/src/webdav.ts"
+      ],
+      "breadfs/aliyundrive": [
+        "./packages/breadfs/src/aliyundrive.ts"
+      ],
       "@breadfs/core": [
         "./packages/core/src/index.ts"
       ],

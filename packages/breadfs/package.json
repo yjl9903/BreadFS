@@ -79,6 +79,6 @@
     "@breadfs/webdav": "workspace:*"
   },
   "engines": {
-    "node": ">=v20.6.1"
+    "node": ">=v24.0.0"
   }
 }
