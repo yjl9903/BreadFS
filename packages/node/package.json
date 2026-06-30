@@ -43,7 +43,7 @@
   },
   "dependencies": {
     "@breadfs/core": "workspace:*",
-    "fs-extra": "^11.3.5",
+    "fs-extra": "^11.3.6",
     "pathe": "^2.0.3"
   },
   "devDependencies": {
