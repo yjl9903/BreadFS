@@ -14,7 +14,7 @@
   },
   "devDependencies": {
     "@types/node": "^24.13.3",
-    "breadc": "^1.0.0-beta.17",
+    "breadc": "^1.0.0-beta.18",
     "bumpp": "latest",
     "dotenv": "^17.4.2",
     "tsdown": "^0.22.14",
