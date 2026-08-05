@@ -124,8 +124,8 @@ importers:
         specifier: ^3.2.0
         version: 3.2.0
       webdav-server:
-        specifier: ^2.6.2
-        version: 2.6.2
+        specifier: ^2.6.3
+        version: 2.6.3
 
 packages:
 
@@ -1319,8 +1319,8 @@ packages:
     resolution: {integrity: sha512-d2JWLCivmZYTSIoge9MsgFCZrt571BikcWGYkjC1khllbTeDlGqZ2D8vD8E/lJa8WGWbb7Plm8/XJYV7IJHZZw==}
     engines: {node: '>= 8'}
 
-  webdav-server@2.6.2:
-    resolution: {integrity: sha512-0iHdrOzlKGFD96bTvPF8IIEfxw9Q7jB5LqWqhjyBYsofD6T6mOYqWtAvR88VY9Mq0xeg8bCRHC2Vifc9iuTYuw==}
+  webdav-server@2.6.3:
+    resolution: {integrity: sha512-cazrR8udZFHc0dyeug5Wp7ztdX0DagsEazeu9Aayk/988jh9U6pVdOJ71dtXlLWoEQ8NNGlaKfeif5rDcRw+ew==}
     engines: {node: '>= 4'}
 
   webdav@5.10.0:
@@ -2301,7 +2301,7 @@ snapshots:
 
   web-streams-polyfill@3.3.3: {}
 
-  webdav-server@2.6.2:
+  webdav-server@2.6.3:
     dependencies:
       mime-types: 2.1.35
       xml-js-builder: 1.0.3
