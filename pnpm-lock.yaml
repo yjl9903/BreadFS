@@ -83,7 +83,7 @@ importers:
         specifier: ^0.8.3
         version: 0.8.3
       memfs:
-        specifier: ^4.68.0
+        specifier: ^4.68.1
         version: 4.68.1
       pathe:
         specifier: ^2.0.3
