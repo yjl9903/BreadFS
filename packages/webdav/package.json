@@ -46,10 +46,10 @@
     "webdav": "^5.10.0"
   },
   "devDependencies": {
-    "@breadc/death": "1.0.0-beta.17",
+    "@breadc/death": "1.0.0-beta.18",
     "@breadfs/node": "workspace:*",
     "get-port-please": "^3.2.0",
-    "webdav-server": "^2.6.2"
+    "webdav-server": "^2.6.3"
   },
   "engines": {
     "node": ">=v24.0.0"
