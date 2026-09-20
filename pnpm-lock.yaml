@@ -269,8 +269,8 @@ importers:
         specifier: workspace:*
         version: link:../core
       webdav:
-        specifier: ^5.10.0
-        version: 5.10.0
+        specifier: ^5.11.0
+        version: 5.11.0
     devDependencies:
       '@breadc/death':
         specifier: 1.0.0-beta.18
@@ -1472,8 +1472,8 @@ packages:
     resolution: {integrity: sha512-cazrR8udZFHc0dyeug5Wp7ztdX0DagsEazeu9Aayk/988jh9U6pVdOJ71dtXlLWoEQ8NNGlaKfeif5rDcRw+ew==}
     engines: {node: '>= 4'}
 
-  webdav@5.10.0:
-    resolution: {integrity: sha512-fVPuRLtcduVGvSO7Tn/6TQCzIvI/g6BO/+xPRctCvi/GytYpjn4czxWbh4HsArsdom9qz9BI63k9/v2HBUui1A==}
+  webdav@5.11.0:
+    resolution: {integrity: sha512-DbUS8rHvWse55EiHM0q5q1z3eVRCLWW7Va7mUqA2/JJdQHIew4Op2HTglHkBJDOAVrQeQf0I+REUJkIrYqtL+w==}
     engines: {node: '>=14'}
 
   why-is-node-running@2.3.0:
@@ -2430,9 +2430,10 @@ snapshots:
       mime-types: 2.1.35
       xml-js-builder: 1.0.3
 
-  webdav@5.10.0:
+  webdav@5.11.0:
     dependencies:
       '@buttercup/fetch': 0.2.1
+      '@nodable/entities': 3.0.0
       base-64: 1.0.0
       byte-length: 1.0.2
       entities: 6.0.1
