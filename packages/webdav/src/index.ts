@@ -41,6 +41,12 @@ export class WebDAVProvider implements BreadFSProvider<'webdav'> {
 
   public createReadStream(path: string) {
     const stream = this.client.createReadStream(path);
+
+    // WebDAV declares platform-neutral streams; Node's adapter requires a Readable.
+    if (!(stream instanceof Readable)) {
+      throw new TypeError('Expected a Node.js readable stream from WebDAV');
+    }
+
     return Readable.toWeb(stream) as ReadableStream<Uint8Array>;
   }
 
@@ -54,6 +60,10 @@ export class WebDAVProvider implements BreadFSProvider<'webdav'> {
       overwrite: true,
       headers
     });
+
+    if (!(stream instanceof Writable)) {
+      throw new TypeError('Expected a Node.js writable stream from WebDAV');
+    }
 
     return Writable.toWeb(stream) as WritableStream;
   }

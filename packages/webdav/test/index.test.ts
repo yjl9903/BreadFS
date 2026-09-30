@@ -56,6 +56,26 @@ describe('webdav', () => {
     expect(await fs.path('/nothing.txt').exists()).toBeFalsy();
   });
 
+  it('should read a WebDAV file as a web stream', async () => {
+    const notes = fs.path('/notes.txt');
+    const content = await new Response(notes.createReadStream()).text();
+    expect(content).toBe(await notes.readText());
+  });
+
+  it('should write a WebDAV file through a web stream', async () => {
+    const target = fs.path('/stream-upload.txt');
+    const content = new TextEncoder().encode('WebDAV stream round trip');
+    try {
+      const writer = target.createWriteStream({ contentLength: content.byteLength }).getWriter();
+      await writer.write(content);
+      await writer.close();
+      // Closing the upload stream can precede the server's response.
+      await expect.poll(() => target.readText()).toBe('WebDAV stream round trip');
+    } finally {
+      await target.remove();
+    }
+  });
+
   it('should list files', async () => {
     expect(
       (await fs.path('/').list())
@@ -382,9 +402,9 @@ describe('webdav', () => {
 
     await file.remove();
 
-    expect(
-      async () => await file.remove({ force: false })
-    ).rejects.toThrowErrorMatchingInlineSnapshot(`[Error: Invalid response: 404 Not Found]`);
+    await expect(file.remove({ force: false })).rejects.toThrowErrorMatchingInlineSnapshot(
+      `[Error: Invalid response: 404 Not Found]`
+    );
   });
 });
 
