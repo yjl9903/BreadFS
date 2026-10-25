@@ -15,11 +15,20 @@ import {
   CopyOptions,
   MoveOptions
 } from './provider';
-import { BreadFSError } from './error';
+import { isNotFound, toBreadFSError } from './error';
 
 type Prettify<T> = {
   [K in keyof T]: T[K];
 } & {};
+
+async function ifExists<T>(run: () => Promise<T>): Promise<T | undefined> {
+  try {
+    return await run();
+  } catch (error) {
+    if (isNotFound(error)) return undefined;
+    throw error;
+  }
+}
 
 export type FileStat<P extends BreadFSProvider<string>> = Prettify<
   { path: Path<P> } & Omit<RawFileStat, 'path'>
@@ -324,7 +333,7 @@ export class BreadFS<P extends BreadFSProvider<string> = BreadFSProvider<string>
           }
 
           const copyFile = async (src: string, dst: string | Path) => {
-            const dstStat = await this.stat(dst).catch(() => undefined);
+            const dstStat = await ifExists(() => this.stat(dst));
             if (dstStat && !dstStat.isFile()) {
               throw new Error(`Can not copy file to directory ${dst}`);
             }
@@ -336,7 +345,7 @@ export class BreadFS<P extends BreadFSProvider<string> = BreadFSProvider<string>
               const writeOptions = { ...options.fallback.stream.write };
               const srcStat =
                 options.fallback.stream?.contentLength || options.fallback.stream?.onProgress
-                  ? await this.stat(src).catch(() => undefined)
+                  ? await ifExists(() => this.stat(src))
                   : undefined;
               if (options.fallback.stream?.contentLength) {
                 if (srcStat && typeof srcStat.size === 'number') {
@@ -391,7 +400,7 @@ export class BreadFS<P extends BreadFSProvider<string> = BreadFSProvider<string>
             await copyFile(src, dst);
           } else if (srcStat.isDirectory()) {
             const copyDirectory = async (src: string, dst: Path) => {
-              const dstStat = await this.stat(dst).catch(() => undefined);
+              const dstStat = await ifExists(() => this.stat(dst));
               if (dstStat) {
                 if (!dstStat.isDirectory()) {
                   throw new Error(`Can not copy directory to file ${dst}`);
@@ -443,7 +452,8 @@ export class BreadFS<P extends BreadFSProvider<string> = BreadFSProvider<string>
             let dstStat: FileStat<P> | undefined;
             try {
               dstStat = this.statSync(dst) as FileStat<P>;
-            } catch {
+            } catch (error) {
+              if (!isNotFound(error)) throw error;
               dstStat = undefined;
             }
 
@@ -463,7 +473,8 @@ export class BreadFS<P extends BreadFSProvider<string> = BreadFSProvider<string>
               let dstStat: FileStat<P> | undefined;
               try {
                 dstStat = this.statSync(dst) as FileStat<P>;
-              } catch {
+              } catch (error) {
+                if (!isNotFound(error)) throw error;
                 dstStat = undefined;
               }
               if (dstStat) {
@@ -526,7 +537,7 @@ export class BreadFS<P extends BreadFSProvider<string> = BreadFSProvider<string>
           }
 
           const moveFile = async (src: string, dst: string | Path) => {
-            const dstStat = await this.stat(dst).catch(() => undefined);
+            const dstStat = await ifExists(() => this.stat(dst));
             if (dstStat && !dstStat.isFile()) {
               throw new Error(`Can not move file to directory ${dst}`);
             }
@@ -538,7 +549,7 @@ export class BreadFS<P extends BreadFSProvider<string> = BreadFSProvider<string>
               const writeOptions = { ...options.fallback.stream.write };
               const srcStat =
                 options.fallback.stream?.contentLength || options.fallback.stream?.onProgress
-                  ? await this.stat(src).catch(() => undefined)
+                  ? await ifExists(() => this.stat(src))
                   : undefined;
               if (options.fallback.stream?.contentLength) {
                 if (srcStat && typeof srcStat.size === 'number') {
@@ -595,7 +606,7 @@ export class BreadFS<P extends BreadFSProvider<string> = BreadFSProvider<string>
             await moveFile(src, dst);
           } else if (srcStat.isDirectory()) {
             const moveDirectory = async (src: string, dst: Path) => {
-              const dstStat = await this.stat(dst).catch(() => undefined);
+              const dstStat = await ifExists(() => this.stat(dst));
               if (dstStat) {
                 if (!dstStat.isDirectory()) {
                   throw new Error(`Can not move directory to file ${dst}`);
@@ -648,7 +659,8 @@ export class BreadFS<P extends BreadFSProvider<string> = BreadFSProvider<string>
             let dstStat: FileStat<P> | undefined;
             try {
               dstStat = this.statSync(dst) as FileStat<P>;
-            } catch {
+            } catch (error) {
+              if (!isNotFound(error)) throw error;
               dstStat = undefined;
             }
 
@@ -669,7 +681,8 @@ export class BreadFS<P extends BreadFSProvider<string> = BreadFSProvider<string>
               let dstStat: FileStat<P> | undefined;
               try {
                 dstStat = this.statSync(dst) as FileStat<P>;
-              } catch {
+              } catch (error) {
+                if (!isNotFound(error)) throw error;
                 dstStat = undefined;
               }
               if (dstStat) {
@@ -883,7 +896,7 @@ export class BreadFS<P extends BreadFSProvider<string> = BreadFSProvider<string>
     try {
       return fn();
     } catch (error) {
-      throw new BreadFSError(error);
+      throw toBreadFSError(error);
     }
   }
 
@@ -891,7 +904,7 @@ export class BreadFS<P extends BreadFSProvider<string> = BreadFSProvider<string>
     try {
       return await fn();
     } catch (error) {
-      throw new BreadFSError(error);
+      throw toBreadFSError(error);
     }
   }
   // ---

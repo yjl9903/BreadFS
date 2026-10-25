@@ -2,7 +2,7 @@ import { describe, it, expect, beforeAll, afterAll } from 'vitest';
 
 import { NodeFS } from '@breadfs/node';
 import { onDeath } from '@breadc/death';
-import { BreadFS } from '@breadfs/core';
+import { BreadFS, isNotFound, NOT_FOUND_CODE, NotFoundError } from '@breadfs/core';
 
 import { WebDAVProvider, AuthType } from '../src';
 
@@ -402,9 +402,26 @@ describe('webdav', () => {
 
     await file.remove();
 
-    await expect(file.remove({ force: false })).rejects.toThrowErrorMatchingInlineSnapshot(
-      `[Error: Invalid response: 404 Not Found]`
-    );
+    try {
+      await file.remove({ force: false });
+      expect.fail('expected remove to throw');
+    } catch (error) {
+      expect(isNotFound(error)).toBe(true);
+      expect(error).toBeInstanceOf(NotFoundError);
+      expect((error as NotFoundError).code).toBe(NOT_FOUND_CODE);
+      expect((error as Error).message).toBe('Invalid response: 404 Not Found');
+    }
+  });
+
+  it('should report a missing directory as not found', async () => {
+    try {
+      await fs.path('/missing-subject').list();
+      expect.fail('expected list to throw');
+    } catch (error) {
+      expect(isNotFound(error)).toBe(true);
+      expect(error).toBeInstanceOf(NotFoundError);
+      expect((error as NotFoundError).code).toBe(NOT_FOUND_CODE);
+    }
   });
 });
 

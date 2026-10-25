@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest';
 
-import { BreadFS } from '@breadfs/core';
+import { BreadFS, isNotFound, NotFoundError } from '@breadfs/core';
 
 import { unzipSync } from 'fflate';
 
@@ -47,6 +47,20 @@ describe('MemFS provider', () => {
     await dst.moveTo(moved);
     expect(await moved.readText()).toBe('hello');
     expect(await dst.exists()).toBeFalsy();
+  });
+
+  it('should report a missing path as not found', async () => {
+    const fs = BreadFS.of(new MemProvider());
+    await expect(fs.path('/missing').list()).rejects.toBeInstanceOf(NotFoundError);
+
+    await fs.path('/dir').mkdir();
+    try {
+      await fs.path('/dir').readFile();
+      expect.fail('expected read to throw');
+    } catch (error) {
+      expect(isNotFound(error)).toBe(false);
+      expect(error).not.toBeInstanceOf(NotFoundError);
+    }
   });
 
   it('should zip directory', async () => {

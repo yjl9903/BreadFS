@@ -1,19 +1,21 @@
 import { createHash } from 'node:crypto';
 import { posix as path } from 'node:path';
 
-import type {
-  BreadFSProvider,
-  CopyOptions,
-  MakeDirectoryOptions,
-  MoveOptions,
-  ListOptions,
-  ReadFileOptions,
-  RawFileStat,
-  RemoveOptions,
-  StatOptions,
-  WriteFileOptions,
-  ReadStreamOptions,
-  WriteStreamOptions
+import {
+  isNotFound,
+  NotFoundError,
+  type BreadFSProvider,
+  type CopyOptions,
+  type MakeDirectoryOptions,
+  type MoveOptions,
+  type ListOptions,
+  type ReadFileOptions,
+  type RawFileStat,
+  type RemoveOptions,
+  type StatOptions,
+  type WriteFileOptions,
+  type ReadStreamOptions,
+  type WriteStreamOptions
 } from '@breadfs/core';
 
 import type {
@@ -110,6 +112,23 @@ const resolveOptions = (options: AliyunDriveProviderOptions): ResolvedOptions =>
   };
 };
 
+function missingPath(pathValue: string, message = `${pathValue} not found`): NotFoundError {
+  return new NotFoundError(message, { path: pathValue });
+}
+
+/** Aliyun OpenAPI uses a `NotFound.` code namespace for missing files and folders. */
+function isAliyunNotFoundCode(code: string): boolean {
+  return code === 'NotFound' || code.startsWith('NotFound.');
+}
+
+function raiseAliyunApiError(code: string, message?: string): never {
+  const apiError = new AliyunDriveError(code, message);
+  if (isAliyunNotFoundCode(code)) {
+    throw new NotFoundError(apiError.message, { cause: apiError });
+  }
+  throw apiError;
+}
+
 export class AliyunDriveProvider implements BreadFSProvider<'aliyundrive'> {
   public readonly name = 'aliyundrive';
 
@@ -139,7 +158,7 @@ export class AliyunDriveProvider implements BreadFSProvider<'aliyundrive'> {
         try {
           const file = await this.resolvePath(pathInput);
           if (!file) {
-            throw new Error(`${pathInput} not found`);
+            throw missingPath(pathInput);
           }
           if (file.type === 'folder') {
             throw new Error(`${pathInput} is a directory`);
@@ -206,7 +225,10 @@ export class AliyunDriveProvider implements BreadFSProvider<'aliyundrive'> {
       }
 
       if (!recursive && i < parts.length - 1) {
-        throw new Error(`Missing parent directory: ${path.dirname(currentPath)}`);
+        throw missingPath(
+        path.dirname(currentPath),
+        `Missing parent directory: ${path.dirname(currentPath)}`
+      );
       }
 
       const created = await this.createDirectory(parentId, part);
@@ -217,7 +239,7 @@ export class AliyunDriveProvider implements BreadFSProvider<'aliyundrive'> {
   public async readFile(pathInput: string, options: ReadFileOptions): Promise<Uint8Array> {
     const file = await this.resolvePath(pathInput);
     if (!file) {
-      throw new Error(`${pathInput} not found`);
+      throw missingPath(pathInput);
     }
     if (file.type === 'folder') {
       throw new Error(`${pathInput} is a directory`);
@@ -264,7 +286,7 @@ export class AliyunDriveProvider implements BreadFSProvider<'aliyundrive'> {
 
     const parent = await this.resolvePath(parentPath);
     if (!parent || parent.type !== 'folder') {
-      throw new Error(`Parent directory not found: ${parentPath}`);
+      throw missingPath(parentPath, `Parent directory not found: ${parentPath}`);
     }
 
     const existing = await this.resolvePath(normalized);
@@ -281,13 +303,13 @@ export class AliyunDriveProvider implements BreadFSProvider<'aliyundrive'> {
 
   public async copy(src: string, dst: string, options: CopyOptions): Promise<void> {
     await this.ensureReady();
-    const srcStat = await this.stat(src).catch(() => undefined);
+    const srcStat = await this.statIfExists(src);
     if (!srcStat) {
-      throw new Error(`${src} not found`);
+      throw missingPath(src);
     }
 
     if (srcStat.isFile()) {
-      const dstStat = await this.stat(dst).catch(() => undefined);
+      const dstStat = await this.statIfExists(dst);
       if (dstStat && dstStat.isDirectory()) {
         throw new Error(`Can not copy file to directory ${dst}`);
       }
@@ -296,7 +318,7 @@ export class AliyunDriveProvider implements BreadFSProvider<'aliyundrive'> {
     }
 
     if (srcStat.isDirectory()) {
-      const dstStat = await this.stat(dst).catch(() => undefined);
+      const dstStat = await this.statIfExists(dst);
       if (dstStat && !dstStat.isDirectory()) {
         throw new Error(`Can not copy directory to file ${dst}`);
       }
@@ -323,13 +345,13 @@ export class AliyunDriveProvider implements BreadFSProvider<'aliyundrive'> {
 
   public async move(src: string, dst: string, options: MoveOptions): Promise<void> {
     await this.ensureReady();
-    const srcStat = await this.stat(src).catch(() => undefined);
+    const srcStat = await this.statIfExists(src);
     if (!srcStat) {
-      throw new Error(`${src} not found`);
+      throw missingPath(src);
     }
 
     if (srcStat.isFile()) {
-      const dstStat = await this.stat(dst).catch(() => undefined);
+      const dstStat = await this.statIfExists(dst);
       if (dstStat && dstStat.isDirectory()) {
         throw new Error(`Can not move file to directory ${dst}`);
       }
@@ -338,7 +360,7 @@ export class AliyunDriveProvider implements BreadFSProvider<'aliyundrive'> {
     }
 
     if (srcStat.isDirectory()) {
-      const dstStat = await this.stat(dst).catch(() => undefined);
+      const dstStat = await this.statIfExists(dst);
       if (dstStat && !dstStat.isDirectory()) {
         throw new Error(`Can not move directory to file ${dst}`);
       }
@@ -369,7 +391,7 @@ export class AliyunDriveProvider implements BreadFSProvider<'aliyundrive'> {
     const file = await this.resolvePath(pathInput);
     if (!file) {
       if (options.force ?? true) return;
-      throw new Error(`${pathInput} not found`);
+      throw missingPath(pathInput);
     }
 
     const uri =
@@ -386,7 +408,7 @@ export class AliyunDriveProvider implements BreadFSProvider<'aliyundrive'> {
     const normalized = normalizePath(pathInput);
     const file = await this.resolvePath(normalized);
     if (!file) {
-      throw new Error(`${normalized} not found`);
+      throw missingPath(normalized);
     }
     return this.toRawFileStat(file, normalized);
   }
@@ -394,8 +416,9 @@ export class AliyunDriveProvider implements BreadFSProvider<'aliyundrive'> {
   public async exists(pathInput: string): Promise<boolean> {
     try {
       return Boolean(await this.resolvePath(pathInput));
-    } catch {
-      return false;
+    } catch (error) {
+      if (isNotFound(error)) return false;
+      throw error;
     }
   }
 
@@ -404,7 +427,7 @@ export class AliyunDriveProvider implements BreadFSProvider<'aliyundrive'> {
     const normalized = normalizePath(pathInput);
     const file = await this.resolvePath(normalized);
     if (!file) {
-      throw new Error(`${normalized} not found`);
+      throw missingPath(normalized);
     }
     if (file.type !== 'folder') {
       throw new Error(`${normalized} is not a directory`);
@@ -420,7 +443,7 @@ export class AliyunDriveProvider implements BreadFSProvider<'aliyundrive'> {
     const normalized = normalizePath(pathInput);
     const file = await this.resolvePath(normalized);
     if (!file) {
-      throw new Error(`${normalized} not found`);
+      throw missingPath(normalized);
     }
     if (file.type !== 'folder') {
       throw new Error(`${normalized} is not a directory`);
@@ -431,10 +454,19 @@ export class AliyunDriveProvider implements BreadFSProvider<'aliyundrive'> {
     return results;
   }
 
+  private async statIfExists(pathInput: string): Promise<RawFileStat | undefined> {
+    try {
+      return await this.stat(pathInput);
+    } catch (error) {
+      if (isNotFound(error)) return undefined;
+      throw error;
+    }
+  }
+
   private async copyFile(src: string, dst: string, options: CopyOptions): Promise<void> {
     const srcItem = await this.resolvePath(src);
     if (!srcItem) {
-      throw new Error(`${src} not found`);
+      throw missingPath(src);
     }
 
     const dstNormalized = normalizePath(dst);
@@ -443,7 +475,7 @@ export class AliyunDriveProvider implements BreadFSProvider<'aliyundrive'> {
 
     const dstParent = await this.resolvePath(dstParentPath);
     if (!dstParent || dstParent.type !== 'folder') {
-      throw new Error(`Destination parent not found: ${dstParentPath}`);
+      throw missingPath(dstParentPath, `Destination parent not found: ${dstParentPath}`);
     }
 
     if (!options.overwrite && (await this.exists(dstNormalized))) {
@@ -479,7 +511,7 @@ export class AliyunDriveProvider implements BreadFSProvider<'aliyundrive'> {
   private async moveFile(src: string, dst: string, options: MoveOptions): Promise<void> {
     const srcItem = await this.resolvePath(src);
     if (!srcItem) {
-      throw new Error(`${src} not found`);
+      throw missingPath(src);
     }
 
     const dstNormalized = normalizePath(dst);
@@ -488,7 +520,7 @@ export class AliyunDriveProvider implements BreadFSProvider<'aliyundrive'> {
 
     const dstParent = await this.resolvePath(dstParentPath);
     if (!dstParent || dstParent.type !== 'folder') {
-      throw new Error(`Destination parent not found: ${dstParentPath}`);
+      throw missingPath(dstParentPath, `Destination parent not found: ${dstParentPath}`);
     }
 
     if (!options.overwrite && (await this.exists(dstNormalized))) {
@@ -727,9 +759,6 @@ export class AliyunDriveProvider implements BreadFSProvider<'aliyundrive'> {
       headers,
       body: body ? JSON.stringify(body) : undefined
     });
-    if (!res.ok) {
-      throw new Error(`failed to request ${this.options.apiUrl}${uri}`);
-    }
 
     const text = await res.text();
     let data: ErrResp & Record<string, unknown> = {};
@@ -737,25 +766,24 @@ export class AliyunDriveProvider implements BreadFSProvider<'aliyundrive'> {
       try {
         data = JSON.parse(text) as ErrResp & Record<string, unknown>;
       } catch {
+        if (!res.ok) {
+          throw new Error(`failed to request ${this.options.apiUrl}${uri}`);
+        }
         throw new Error(`Invalid JSON response from ${uri}`);
       }
     }
     const code = (data as ErrResp).code;
-
-    if (!res.ok && !code) {
-      if (!retry && res.status === 401) {
-        await this.refreshToken();
-        return this.request(type, uri, method, body, true);
-      }
-      throw new Error(`Request failed with status ${res.status}`);
-    }
 
     if (code) {
       if (!retry && (TOKEN_ERROR_CODES.has(code) || !this.accessToken)) {
         await this.refreshToken();
         return this.request(type, uri, method, body, true);
       }
-      throw new AliyunDriveError(code, (data as ErrResp).message);
+      raiseAliyunApiError(code, (data as ErrResp).message);
+    }
+
+    if (!res.ok) {
+      throw new Error(`failed to request ${this.options.apiUrl}${uri}`);
     }
 
     return data as T;

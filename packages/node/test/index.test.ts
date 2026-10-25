@@ -1,6 +1,6 @@
 import { describe, it, expect, beforeAll, afterAll } from 'vitest';
 
-import { BreadFS } from '@breadfs/core';
+import { BreadFS, BreadFSError, isNotFound, NOT_FOUND_CODE, NotFoundError } from '@breadfs/core';
 
 import { NodeFS } from '../src';
 
@@ -101,6 +101,39 @@ describe('File System', () => {
           "../core/src/shim.d.ts",
         ]
       `);
+  });
+
+  it('should report a missing path as not found', async () => {
+    const missing = fs.path(temp, 'missing-dir');
+
+    await expect(missing.list()).rejects.toBeInstanceOf(NotFoundError);
+    try {
+      await missing.readText();
+      expect.fail('expected read to throw');
+    } catch (error) {
+      expect(isNotFound(error)).toBe(true);
+      expect(error).toBeInstanceOf(NotFoundError);
+      expect((error as NotFoundError).code).toBe(NOT_FOUND_CODE);
+    }
+
+    expect(() => fs.path(temp, 'missing-sync').listSync()).toThrow(NotFoundError);
+  });
+
+  it('should not treat listing a file as not found', async () => {
+    const file = fs.path(temp, 'not-a-directory.txt');
+    await file.writeText('hello');
+
+    try {
+      await file.list();
+      expect.fail('expected list to throw');
+    } catch (error) {
+      expect(isNotFound(error)).toBe(false);
+      expect(error).toBeInstanceOf(BreadFSError);
+      expect(error).not.toBeInstanceOf(NotFoundError);
+      expect((error as BreadFSError).code).toBe('ENOTDIR');
+    }
+
+    await file.remove();
   });
 
   it('should stat', async () => {
