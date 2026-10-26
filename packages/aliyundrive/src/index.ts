@@ -6,3 +6,5 @@ export type {
   AliyunDriveRefreshOnlineOptions,
   AliyunDriveRefreshOptions
 } from './types';
+
+export type { AliyunDriveErrorSource } from './error';

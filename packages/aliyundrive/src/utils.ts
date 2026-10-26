@@ -1,3 +1,5 @@
+import { BreadFSError } from '@breadfs/core';
+
 import { posix as path } from 'node:path';
 
 import type { FileItem } from './types';
@@ -59,3 +61,9 @@ export const getPartSize = (fileSize: number): number => {
 
 export const makePartInfoList = (size: number): { part_number: number }[] =>
   Array.from({ length: size }, (_, index) => ({ part_number: index + 1 }));
+
+/** Use only where a missing entry is explicitly allowed. */
+export function ignoreNotFound(error: unknown): undefined {
+  if (!(error instanceof BreadFSError) || error.code !== 'ENOENT') throw error;
+  return undefined;
+}

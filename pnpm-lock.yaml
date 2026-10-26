@@ -225,6 +225,9 @@ importers:
         specifier: workspace:*
         version: link:../core
     devDependencies:
+      '@breadfs/internal':
+        specifier: workspace:*
+        version: link:../internal
       '@breadfs/node':
         specifier: workspace:*
         version: link:../node
@@ -253,6 +256,12 @@ importers:
       pathe:
         specifier: ^2.0.3
         version: 2.0.3
+    devDependencies:
+      '@breadfs/internal':
+        specifier: workspace:*
+        version: link:../internal
+
+  packages/internal: {}
 
   packages/mem:
     dependencies:
@@ -268,6 +277,10 @@ importers:
       pathe:
         specifier: ^2.0.3
         version: 2.0.3
+    devDependencies:
+      '@breadfs/internal':
+        specifier: workspace:*
+        version: link:../internal
 
   packages/node:
     dependencies:
@@ -281,6 +294,9 @@ importers:
         specifier: ^2.0.3
         version: 2.0.3
     devDependencies:
+      '@breadfs/internal':
+        specifier: workspace:*
+        version: link:../internal
       '@types/fs-extra':
         specifier: ^11.0.4
         version: 11.0.4
@@ -297,6 +313,9 @@ importers:
       '@breadc/death':
         specifier: 1.0.0-beta.18
         version: 1.0.0-beta.18
+      '@breadfs/internal':
+        specifier: workspace:*
+        version: link:../internal
       '@breadfs/node':
         specifier: workspace:*
         version: link:../node

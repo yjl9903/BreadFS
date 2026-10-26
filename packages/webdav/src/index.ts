@@ -15,6 +15,11 @@ import type {
   RawFileStat,
   WriteStreamOptions
 } from '@breadfs/core';
+import { wrapReadable, wrapWritable } from '@breadfs/internal';
+
+import { BreadFSError } from '@breadfs/core';
+
+import { normalizeWebDAVError, webDAVStatus } from './error';
 
 export type { Headers, OAuthToken, WebDAVClient, WebDAVClientOptions } from 'webdav';
 
@@ -40,48 +45,110 @@ export class WebDAVProvider implements BreadFSProvider<'webdav'> {
   }
 
   public createReadStream(path: string) {
-    const stream = this.client.createReadStream(path);
+    try {
+      const stream = this.client.createReadStream(path);
 
-    // WebDAV declares platform-neutral streams; Node's adapter requires a Readable.
-    if (!(stream instanceof Readable)) {
-      throw new TypeError('Expected a Node.js readable stream from WebDAV');
+      // WebDAV declares platform-neutral streams; Node's adapter requires a Readable.
+      if (!(stream instanceof Readable)) {
+        throw new TypeError('Expected a Node.js readable stream from WebDAV');
+      }
+
+      return wrapReadable(Readable.toWeb(stream) as ReadableStream<Uint8Array>, (error) =>
+        normalizeWebDAVError(error, { operation: 'createReadStream', path })
+      );
+    } catch (error) {
+      throw normalizeWebDAVError(error, {
+        operation: 'createReadStream',
+        path
+      });
     }
-
-    return Readable.toWeb(stream) as ReadableStream<Uint8Array>;
   }
 
   public createWriteStream(path: string, options: WriteStreamOptions) {
-    const headers: Record<string, string> = {};
-    if (options.contentLength) {
-      headers['Content-Length'] = `${options.contentLength}`;
+    try {
+      const headers: Record<string, string> = {};
+      if (options.contentLength !== undefined) {
+        headers['Content-Length'] = `${options.contentLength}`;
+      }
+
+      let complete!: () => void;
+      let fail!: (error: unknown) => void;
+      const completed = new Promise<void>((resolve, reject) => {
+        complete = resolve;
+        fail = reject;
+      });
+      const stream = this.client.createWriteStream(
+        path,
+        {
+          overwrite: true,
+          headers
+        },
+        complete
+      );
+
+      if (!(stream instanceof Writable)) {
+        throw new TypeError('Expected a Node.js writable stream from WebDAV');
+      }
+
+      stream.once('error', fail);
+      const writer = (Writable.toWeb(stream) as WritableStream<Uint8Array>).getWriter();
+      return wrapWritable(
+        new WritableStream<Uint8Array>({
+          start(controller) {
+            void completed.catch((error) => controller.error(error));
+            void writer.closed.catch((error) => controller.error(error));
+          },
+          write: (chunk) => writer.write(chunk),
+          async close() {
+            try {
+              await writer.close();
+              // The Node stream finishes before the server acknowledges the PUT.
+              await completed;
+            } finally {
+              writer.releaseLock();
+            }
+          },
+          async abort(reason) {
+            try {
+              await writer.abort(reason);
+            } finally {
+              writer.releaseLock();
+            }
+          }
+        }),
+        (error) =>
+          normalizeWebDAVError(error, { operation: 'createWriteStream', path })
+      );
+    } catch (error) {
+      throw normalizeWebDAVError(error, {
+        operation: 'createWriteStream',
+        path
+      });
     }
-
-    const stream = this.client.createWriteStream(path, {
-      overwrite: true,
-      headers
-    });
-
-    if (!(stream instanceof Writable)) {
-      throw new TypeError('Expected a Node.js writable stream from WebDAV');
-    }
-
-    return Writable.toWeb(stream) as WritableStream;
   }
 
   public async mkdir(path: string, options: MakeDirectoryOptions): Promise<void> {
-    await this.client.createDirectory(path, options);
+    try {
+      await this.client.createDirectory(path, options);
+    } catch (error) {
+      throw normalizeWebDAVError(error, { operation: 'mkdir', path });
+    }
   }
 
   public async readFile(path: string, options: ReadFileOptions): Promise<Uint8Array> {
-    const content = (await this.client.getFileContents(path, {
-      format: 'binary',
-      onDownloadProgress: options.onProgress
-        ? (ev) => {
-            options.onProgress?.({ current: ev.loaded, total: ev.total });
-          }
-        : undefined
-    })) as Uint8Array;
-    return content;
+    try {
+      const content = (await this.client.getFileContents(path, {
+        format: 'binary',
+        onDownloadProgress: options.onProgress
+          ? (ev) => {
+              options.onProgress?.({ current: ev.loaded, total: ev.total });
+            }
+          : undefined
+      })) as Uint8Array;
+      return content;
+    } catch (error) {
+      throw normalizeWebDAVError(error, { operation: 'readFile', path });
+    }
   }
 
   public async writeFile(
@@ -89,76 +156,130 @@ export class WebDAVProvider implements BreadFSProvider<'webdav'> {
     buffer: Uint8Array,
     options: WriteFileOptions
   ): Promise<void> {
-    await this.client.putFileContents(path, buffer as Buffer, {
-      overwrite: true,
-      onUploadProgress: options.onProgress
-        ? (ev) => {
-            options.onProgress?.({ current: ev.loaded, total: ev.total });
-          }
-        : undefined
-    });
+    try {
+      await this.client.putFileContents(path, buffer as Buffer, {
+        overwrite: true,
+        onUploadProgress: options.onProgress
+          ? (ev) => {
+              options.onProgress?.({ current: ev.loaded, total: ev.total });
+            }
+          : undefined
+      });
+    } catch (error) {
+      throw normalizeWebDAVError(error, { operation: 'writeFile', path });
+    }
   }
 
   public async copy(src: string, dst: string, options: CopyOptions) {
-    await this.client.copyFile(src, dst);
+    try {
+      await this.client.copyFile(src, dst, { overwrite: options.overwrite });
+    } catch (error) {
+      if (webDAVStatus(error) === 412 && options.overwrite === false) {
+        if (!options.errorOnExist) return;
+        throw new BreadFSError(error, {
+          code: 'EEXIST',
+          operation: 'copy',
+          path: src,
+          dest: dst,
+          source: { provider: 'webdav', status: 412 }
+        });
+      }
+      throw normalizeWebDAVError(error, {
+        operation: 'copy',
+        path: src,
+        dest: dst
+      });
+    }
   }
 
   public async move(src: string, dst: string, options: MoveOptions) {
-    await this.client.moveFile(src, dst);
+    const overwrite = options.overwrite ?? false;
+    try {
+      await this.client.moveFile(src, dst, { overwrite });
+    } catch (error) {
+      if (webDAVStatus(error) === 412 && !overwrite) {
+        throw new BreadFSError(error, {
+          code: 'EEXIST',
+          operation: 'move',
+          path: src,
+          dest: dst,
+          source: { provider: 'webdav', status: 412 }
+        });
+      }
+      throw normalizeWebDAVError(error, {
+        operation: 'move',
+        path: src,
+        dest: dst
+      });
+    }
   }
 
   public async remove(path: string, options: RemoveOptions): Promise<void> {
     const force = options.force ?? true;
     try {
       await this.client.deleteFile(path);
-    } catch (_error) {
-      const error = _error as any;
-      if (error.status === 404 && error.response) {
-        if (!force) {
-          throw error;
-        }
-      }
+    } catch (error) {
+      if (force && webDAVStatus(error) === 404) return;
+      throw normalizeWebDAVError(error, { operation: 'remove', path });
     }
   }
 
   public async stat(path: string): Promise<RawFileStat> {
-    const stat = (await this.client.stat(path)) as WebDAVFileStat;
+    try {
+      const stat = (await this.client.stat(path)) as WebDAVFileStat;
 
-    return {
-      path,
-      size: stat.size,
-      isFile: () => stat.type === 'file',
-      isDirectory: () => stat.type === 'directory',
-      isSymbolicLink: () => false,
-      mtime: new Date(stat.lastmod),
-      birthtime: undefined
-    };
+      return {
+        path,
+        size: stat.size,
+        isFile: () => stat.type === 'file',
+        isDirectory: () => stat.type === 'directory',
+        isSymbolicLink: () => false,
+        mtime: new Date(stat.lastmod),
+        birthtime: undefined
+      };
+    } catch (error) {
+      throw normalizeWebDAVError(error, { operation: 'stat', path });
+    }
   }
 
   public async exists(path: string): Promise<boolean> {
-    return await this.client.exists(path);
+    try {
+      return await this.client.exists(path);
+    } catch (error) {
+      throw normalizeWebDAVError(error, { operation: 'exists', path });
+    }
   }
 
   public async list(path: string, options: ListOptions): Promise<string[]> {
-    const ps = (await this.client.getDirectoryContents(path, {
-      deep: options.recursive
-    })) as WebDAVFileStat[];
-    return ps.map((p) => p.filename);
+    try {
+      const ps = (await this.client.getDirectoryContents(path, {
+        deep: options.recursive
+      })) as WebDAVFileStat[];
+      return ps.map((p) => p.filename);
+    } catch (error) {
+      throw normalizeWebDAVError(error, { operation: 'list', path });
+    }
   }
 
   public async listStat(path: string, options: ListOptions): Promise<RawFileStat[]> {
-    const ps = (await this.client.getDirectoryContents(path, {
-      deep: options.recursive
-    })) as WebDAVFileStat[];
+    try {
+      const ps = (await this.client.getDirectoryContents(path, {
+        deep: options.recursive
+      })) as WebDAVFileStat[];
 
-    return ps.map((stat) => ({
-      path: stat.filename,
-      size: stat.size,
-      isFile: () => stat.type === 'file',
-      isDirectory: () => stat.type === 'directory',
-      isSymbolicLink: () => false,
-      mtime: new Date(stat.lastmod),
-      birthtime: undefined
-    }));
+      return ps.map((stat) => ({
+        path: stat.filename,
+        size: stat.size,
+        isFile: () => stat.type === 'file',
+        isDirectory: () => stat.type === 'directory',
+        isSymbolicLink: () => false,
+        mtime: new Date(stat.lastmod),
+        birthtime: undefined
+      }));
+    } catch (error) {
+      throw normalizeWebDAVError(error, { operation: 'listStat', path });
+    }
   }
 }
+
+export type { WebDAVErrorSource } from './error';

@@ -45,6 +45,7 @@ describe('File System', () => {
         "../aliyundrive",
         "../breadfs",
         "../core",
+        "../internal",
         "../mem",
         "../node",
         "../webdav",
@@ -64,6 +65,7 @@ describe('File System', () => {
         "../aliyundrive",
         "../breadfs",
         "../core",
+        "../internal",
         "../mem",
         "../node",
         "../webdav",
@@ -83,6 +85,7 @@ describe('File System', () => {
           "../core/src/provider/index.ts",
           "../core/src/provider/types.ts",
           "../core/src/shim.d.ts",
+          "../core/src/utils.ts",
         ]
       `);
   });
@@ -99,6 +102,7 @@ describe('File System', () => {
           "../core/src/provider/index.ts",
           "../core/src/provider/types.ts",
           "../core/src/shim.d.ts",
+          "../core/src/utils.ts",
         ]
       `);
   });

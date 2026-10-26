@@ -44,6 +44,9 @@
   "dependencies": {
     "pathe": "^2.0.3"
   },
+  "devDependencies": {
+    "@breadfs/internal": "workspace:*"
+  },
   "engines": {
     "node": ">=v24.0.0"
   }

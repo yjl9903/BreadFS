@@ -1,4 +1,5 @@
 import pathe from 'pathe';
+import { wrapReadable, wrapWritable } from '@breadfs/internal';
 
 import {
   RawFileStat,
@@ -16,6 +17,7 @@ import {
   MoveOptions
 } from './provider';
 import { BreadFSError } from './error';
+import { ignoreNotFound } from './utils';
 
 type Prettify<T> = {
   [K in keyof T]: T[K];
@@ -59,11 +61,22 @@ export class BreadFS<P extends BreadFSProvider<string> = BreadFSProvider<string>
     path: string | Path,
     options: ReadStreamOptions = {}
   ): ReadableStream<Uint8Array> {
-    return this.runSync(() =>
-      this.matchFS(
-        path,
-        (p) => this.provider.createReadStream(p, options),
-        (p) => p.fs.createReadStream(p, options)
+    return this.runSync('createReadStream', path, undefined, () =>
+      wrapReadable(
+        this.matchFS(
+          path,
+          (p) => this.provider.createReadStream(p, options),
+          (p) => p.fs.createReadStream(p, options)
+        ),
+        (error) =>
+          error instanceof BreadFSError
+            ? error
+            : new BreadFSError(error, {
+                operation: 'createReadStream',
+                path: typeof path === 'string' ? path : path.path,
+                code: 'ERR_BREADFS_UNKNOWN',
+                source: { provider: 'core' }
+              })
       )
     );
   }
@@ -72,11 +85,22 @@ export class BreadFS<P extends BreadFSProvider<string> = BreadFSProvider<string>
     path: string | Path,
     options: WriteStreamOptions = {}
   ): WritableStream<Uint8Array> {
-    return this.runSync(() =>
-      this.matchFS(
-        path,
-        (p) => this.provider.createWriteStream(p, options),
-        (p) => p.fs.createWriteStream(p, options)
+    return this.runSync('createWriteStream', path, undefined, () =>
+      wrapWritable(
+        this.matchFS(
+          path,
+          (p) => this.provider.createWriteStream(p, options),
+          (p) => p.fs.createWriteStream(p, options)
+        ),
+        (error) =>
+          error instanceof BreadFSError
+            ? error
+            : new BreadFSError(error, {
+                operation: 'createWriteStream',
+                path: typeof path === 'string' ? path : path.path,
+                code: 'ERR_BREADFS_UNKNOWN',
+                source: { provider: 'core' }
+              })
       )
     );
   }
@@ -86,7 +110,7 @@ export class BreadFS<P extends BreadFSProvider<string> = BreadFSProvider<string>
     options: MakeDirectoryOptions = {}
   ): Promise<void> {
     const resolved: MakeDirectoryOptions = { recursive: true, ...options };
-    await this.runAsync(() =>
+    await this.runAsync('mkdir', path, undefined, () =>
       this.matchFS(
         path,
         async (p) => await this.provider.mkdir(p, resolved),
@@ -97,12 +121,18 @@ export class BreadFS<P extends BreadFSProvider<string> = BreadFSProvider<string>
 
   public mkdirSync<T extends string | Path>(path: T, options: MakeDirectoryOptions = {}): void {
     const resolved: MakeDirectoryOptions = { recursive: true, ...options };
-    return this.runSync(() =>
+    return this.runSync('mkdirSync', path, undefined, () =>
       this.matchFS(
         path,
         (p) => {
           if (!this.provider.mkdirSync) {
-            throw new Error('mkdirSync is not supported');
+            throw new BreadFSError('mkdirSync is not supported', {
+              code: 'ENOTSUP',
+              operation: 'mkdirSync',
+              path: typeof path === 'string' ? path : path.path,
+
+              source: { provider: 'core' }
+            });
           }
           return this.provider.mkdirSync(p, resolved);
         },
@@ -112,7 +142,7 @@ export class BreadFS<P extends BreadFSProvider<string> = BreadFSProvider<string>
   }
 
   public async readFile(path: string | Path, options: ReadFileOptions = {}): Promise<Uint8Array> {
-    return this.runAsync(() =>
+    return this.runAsync('readFile', path, undefined, () =>
       this.matchFS(
         path,
         (p) => this.provider.readFile(p, options),
@@ -122,12 +152,18 @@ export class BreadFS<P extends BreadFSProvider<string> = BreadFSProvider<string>
   }
 
   public readFileSync(path: string | Path, options: ReadFileOptions = {}): Uint8Array {
-    return this.runSync(() =>
+    return this.runSync('readFileSync', path, undefined, () =>
       this.matchFS(
         path,
         (p) => {
           if (!this.provider.readFileSync) {
-            throw new Error('readFileSync is not supported');
+            throw new BreadFSError('readFileSync is not supported', {
+              code: 'ENOTSUP',
+              operation: 'readFileSync',
+              path: typeof path === 'string' ? path : path.path,
+
+              source: { provider: 'core' }
+            });
           }
           return this.provider.readFileSync(p, options);
         },
@@ -140,7 +176,7 @@ export class BreadFS<P extends BreadFSProvider<string> = BreadFSProvider<string>
     path: string | Path,
     options: BufferEncoding | EncodingOptions = 'utf-8'
   ): Promise<string> {
-    return this.runAsync(async () => {
+    return this.runAsync('readText', path, undefined, async () => {
       // @ts-expect-error
       const resolved: EncodingOptions =
         typeof options === 'string' ? { encoding: options } : options;
@@ -163,7 +199,7 @@ export class BreadFS<P extends BreadFSProvider<string> = BreadFSProvider<string>
     path: string | Path,
     options: BufferEncoding | EncodingOptions = 'utf-8'
   ): string {
-    return this.runSync(() => {
+    return this.runSync('readTextSync', path, undefined, () => {
       // @ts-expect-error
       const resolved: EncodingOptions =
         typeof options === 'string' ? { encoding: options } : options;
@@ -187,7 +223,7 @@ export class BreadFS<P extends BreadFSProvider<string> = BreadFSProvider<string>
     buffer: Buffer | Uint8Array,
     options: WriteFileOptions = {}
   ): Promise<void> {
-    return this.runAsync(() =>
+    return this.runAsync('writeFile', path, undefined, () =>
       this.matchFS(
         path,
         (p) => this.provider.writeFile(p, buffer, options),
@@ -201,12 +237,18 @@ export class BreadFS<P extends BreadFSProvider<string> = BreadFSProvider<string>
     buffer: Buffer | Uint8Array,
     options: WriteFileOptions = {}
   ): void {
-    this.runSync(() =>
+    this.runSync('writeFileSync', path, undefined, () =>
       this.matchFS(
         path,
         (p) => {
           if (!this.provider.writeFileSync) {
-            throw new Error('writeFileSync is not supported');
+            throw new BreadFSError('writeFileSync is not supported', {
+              code: 'ENOTSUP',
+              operation: 'writeFileSync',
+              path: typeof path === 'string' ? path : path.path,
+
+              source: { provider: 'core' }
+            });
           }
           return this.provider.writeFileSync(p, buffer, options);
         },
@@ -220,7 +262,7 @@ export class BreadFS<P extends BreadFSProvider<string> = BreadFSProvider<string>
     content: string,
     options: BufferEncoding | EncodingOptions = 'utf-8'
   ): Promise<void> {
-    await this.runAsync(async () => {
+    await this.runAsync('writeText', path, undefined, async () => {
       if (this.provider.writeText) {
         // @ts-expect-error
         const resolved: EncodingOptions =
@@ -243,7 +285,7 @@ export class BreadFS<P extends BreadFSProvider<string> = BreadFSProvider<string>
     content: string,
     options: BufferEncoding | EncodingOptions = 'utf-8'
   ): void {
-    this.runSync(() => {
+    this.runSync('writeTextSync', path, undefined, () => {
       if (this.provider.writeTextSync) {
         // @ts-expect-error
         const resolved: EncodingOptions =
@@ -269,7 +311,7 @@ export class BreadFS<P extends BreadFSProvider<string> = BreadFSProvider<string>
    */
   public async remove(path: string | Path, options: RemoveOptions = {}): Promise<void> {
     const resolved: RemoveOptions = { recursive: true, force: true, ...options };
-    return this.runAsync(() =>
+    return this.runAsync('remove', path, undefined, () =>
       this.matchFS(
         path,
         (p) => this.provider.remove(p, resolved),
@@ -280,12 +322,18 @@ export class BreadFS<P extends BreadFSProvider<string> = BreadFSProvider<string>
 
   public removeSync(path: string | Path, options: RemoveOptions = {}): void {
     const resolved: RemoveOptions = { recursive: true, force: true, ...options };
-    this.runSync(() =>
+    this.runSync('removeSync', path, undefined, () =>
       this.matchFS(
         path,
         (p) => {
           if (!this.provider.removeSync) {
-            throw new Error('removeSync is not supported');
+            throw new BreadFSError('removeSync is not supported', {
+              code: 'ENOTSUP',
+              operation: 'removeSync',
+              path: typeof path === 'string' ? path : path.path,
+
+              source: { provider: 'core' }
+            });
           }
           return this.provider.removeSync(p, resolved);
         },
@@ -307,7 +355,7 @@ export class BreadFS<P extends BreadFSProvider<string> = BreadFSProvider<string>
     dst: string | Path,
     options: CopyOptions = {}
   ): Promise<void> {
-    return this.runAsync(() =>
+    return this.runAsync('copy', src, dst, () =>
       this.matchFS(
         src,
         async (src) => {
@@ -320,13 +368,25 @@ export class BreadFS<P extends BreadFSProvider<string> = BreadFSProvider<string>
 
           // Check overwrite
           if (!options.overwrite && (await this.exists(dst))) {
-            throw new Error(`${dst} is existed`);
+            throw new BreadFSError(`${dst} is existed`, {
+              code: 'EEXIST',
+              operation: 'copy',
+              path: src,
+              dest: typeof dst === 'string' ? dst : dst.path,
+              source: { provider: 'core' }
+            });
           }
 
           const copyFile = async (src: string, dst: string | Path) => {
-            const dstStat = await this.stat(dst).catch(() => undefined);
+            const dstStat = await this.stat(dst).catch(ignoreNotFound);
             if (dstStat && !dstStat.isFile()) {
-              throw new Error(`Can not copy file to directory ${dst}`);
+              throw new BreadFSError(`Can not copy file to directory ${dst}`, {
+                code: 'EISDIR',
+                operation: 'copy',
+                path: src,
+                dest: typeof dst === 'string' ? dst : dst.path,
+                source: { provider: 'core' }
+              });
             }
 
             if (options.fallback?.stream) {
@@ -336,7 +396,7 @@ export class BreadFS<P extends BreadFSProvider<string> = BreadFSProvider<string>
               const writeOptions = { ...options.fallback.stream.write };
               const srcStat =
                 options.fallback.stream?.contentLength || options.fallback.stream?.onProgress
-                  ? await this.stat(src).catch(() => undefined)
+                  ? await this.stat(src).catch(ignoreNotFound)
                   : undefined;
               if (options.fallback.stream?.contentLength) {
                 if (srcStat && typeof srcStat.size === 'number') {
@@ -344,7 +404,13 @@ export class BreadFS<P extends BreadFSProvider<string> = BreadFSProvider<string>
                 } else if (srcStat && typeof srcStat.size === 'bigint') {
                   writeOptions.contentLength = Number(srcStat.size);
                 } else {
-                  throw new Error(`Can not get file size of ${src}`);
+                  throw new BreadFSError(`Can not get file size of ${src}`, {
+                    code: 'ERR_BREADFS_UNKNOWN',
+                    operation: 'copy',
+                    path: src,
+                    dest: typeof dst === 'string' ? dst : dst.path,
+                    source: { provider: 'core' }
+                  });
                 }
               }
 
@@ -391,10 +457,16 @@ export class BreadFS<P extends BreadFSProvider<string> = BreadFSProvider<string>
             await copyFile(src, dst);
           } else if (srcStat.isDirectory()) {
             const copyDirectory = async (src: string, dst: Path) => {
-              const dstStat = await this.stat(dst).catch(() => undefined);
+              const dstStat = await this.stat(dst).catch(ignoreNotFound);
               if (dstStat) {
                 if (!dstStat.isDirectory()) {
-                  throw new Error(`Can not copy directory to file ${dst}`);
+                  throw new BreadFSError(`Can not copy directory to file ${dst}`, {
+                    code: 'ENOTDIR',
+                    operation: 'copy',
+                    path: src,
+                    dest: typeof dst === 'string' ? dst : dst.path,
+                    source: { provider: 'core' }
+                  });
                 }
               } else {
                 await this.mkdir(dst);
@@ -408,7 +480,13 @@ export class BreadFS<P extends BreadFSProvider<string> = BreadFSProvider<string>
                   } else if (file.isFile()) {
                     await copyFile(file.path.path, dst.join(name));
                   } else {
-                    throw new Error('Not support copy other file types');
+                    throw new BreadFSError('Not support copy other file types', {
+                      code: 'ENOTSUP',
+                      operation: 'copy',
+                      path: src,
+                      dest: typeof dst === 'string' ? dst : dst.path,
+                      source: { provider: 'core' }
+                    });
                   }
                 })
               );
@@ -416,16 +494,22 @@ export class BreadFS<P extends BreadFSProvider<string> = BreadFSProvider<string>
 
             await copyDirectory(src, typeof dst === 'string' ? new Path(this, dst) : dst);
           } else {
-            throw new Error('Not support copy other file types');
+            throw new BreadFSError('Not support copy other file types', {
+              code: 'ENOTSUP',
+              operation: 'copy',
+              path: src,
+              dest: typeof dst === 'string' ? dst : dst.path,
+              source: { provider: 'core' }
+            });
           }
         },
-        (src) => src.fs.copy(src, dst)
+        (src) => src.fs.copy(src, dst, options)
       )
     );
   }
 
   public copySync(src: string | Path, dst: string | Path, options: CopyOptions = {}): void {
-    this.runSync(() =>
+    this.runSync('copySync', src, dst, () =>
       this.matchFS(
         src,
         (src) => {
@@ -436,19 +520,32 @@ export class BreadFS<P extends BreadFSProvider<string> = BreadFSProvider<string>
           }
 
           if (!options.overwrite && this.existsSync(dst)) {
-            throw new Error(`${dst} is existed`);
+            throw new BreadFSError(`${dst} is existed`, {
+              code: 'EEXIST',
+              operation: 'copySync',
+              path: src,
+              dest: typeof dst === 'string' ? dst : dst.path,
+              source: { provider: 'core' }
+            });
           }
 
           const copyFile = (src: string, dst: string | Path) => {
             let dstStat: FileStat<P> | undefined;
             try {
               dstStat = this.statSync(dst) as FileStat<P>;
-            } catch {
+            } catch (error) {
+              ignoreNotFound(error);
               dstStat = undefined;
             }
 
             if (dstStat && !dstStat.isFile()) {
-              throw new Error(`Can not copy file to directory ${dst}`);
+              throw new BreadFSError(`Can not copy file to directory ${dst}`, {
+                code: 'EISDIR',
+                operation: 'copySync',
+                path: src,
+                dest: typeof dst === 'string' ? dst : dst.path,
+                source: { provider: 'core' }
+              });
             }
 
             const contents = this.readFileSync(src, options.fallback?.file?.read);
@@ -463,12 +560,19 @@ export class BreadFS<P extends BreadFSProvider<string> = BreadFSProvider<string>
               let dstStat: FileStat<P> | undefined;
               try {
                 dstStat = this.statSync(dst) as FileStat<P>;
-              } catch {
+              } catch (error) {
+                ignoreNotFound(error);
                 dstStat = undefined;
               }
               if (dstStat) {
                 if (!dstStat.isDirectory()) {
-                  throw new Error(`Can not copy directory to file ${dst}`);
+                  throw new BreadFSError(`Can not copy directory to file ${dst}`, {
+                    code: 'ENOTDIR',
+                    operation: 'copySync',
+                    path: src,
+                    dest: typeof dst === 'string' ? dst : dst.path,
+                    source: { provider: 'core' }
+                  });
                 }
               } else {
                 this.mkdirSync(dst);
@@ -481,17 +585,29 @@ export class BreadFS<P extends BreadFSProvider<string> = BreadFSProvider<string>
                 } else if (file.isFile()) {
                   copyFile(file.path.path, dst.join(name));
                 } else {
-                  throw new Error('Not support copy other file types');
+                  throw new BreadFSError('Not support copy other file types', {
+                    code: 'ENOTSUP',
+                    operation: 'copySync',
+                    path: src,
+                    dest: typeof dst === 'string' ? dst : dst.path,
+                    source: { provider: 'core' }
+                  });
                 }
               }
             };
 
             copyDirectory(src, typeof dst === 'string' ? new Path(this, dst) : dst);
           } else {
-            throw new Error('Not support copy other file types');
+            throw new BreadFSError('Not support copy other file types', {
+              code: 'ENOTSUP',
+              operation: 'copySync',
+              path: src,
+              dest: typeof dst === 'string' ? dst : dst.path,
+              source: { provider: 'core' }
+            });
           }
         },
-        (src) => src.fs.copySync(src, dst)
+        (src) => src.fs.copySync(src, dst, options)
       )
     );
   }
@@ -509,7 +625,7 @@ export class BreadFS<P extends BreadFSProvider<string> = BreadFSProvider<string>
     dst: string | Path,
     options: MoveOptions = {}
   ): Promise<void> {
-    return this.runAsync(() =>
+    return this.runAsync('move', src, dst, () =>
       this.matchFS(
         src,
         async (src) => {
@@ -522,13 +638,25 @@ export class BreadFS<P extends BreadFSProvider<string> = BreadFSProvider<string>
 
           // Check overwrite
           if (!options.overwrite && (await this.exists(dst))) {
-            throw new Error(`${dst} is existed`);
+            throw new BreadFSError(`${dst} is existed`, {
+              code: 'EEXIST',
+              operation: 'move',
+              path: src,
+              dest: typeof dst === 'string' ? dst : dst.path,
+              source: { provider: 'core' }
+            });
           }
 
           const moveFile = async (src: string, dst: string | Path) => {
-            const dstStat = await this.stat(dst).catch(() => undefined);
+            const dstStat = await this.stat(dst).catch(ignoreNotFound);
             if (dstStat && !dstStat.isFile()) {
-              throw new Error(`Can not move file to directory ${dst}`);
+              throw new BreadFSError(`Can not move file to directory ${dst}`, {
+                code: 'EISDIR',
+                operation: 'move',
+                path: src,
+                dest: typeof dst === 'string' ? dst : dst.path,
+                source: { provider: 'core' }
+              });
             }
 
             if (options.fallback?.stream) {
@@ -538,7 +666,7 @@ export class BreadFS<P extends BreadFSProvider<string> = BreadFSProvider<string>
               const writeOptions = { ...options.fallback.stream.write };
               const srcStat =
                 options.fallback.stream?.contentLength || options.fallback.stream?.onProgress
-                  ? await this.stat(src).catch(() => undefined)
+                  ? await this.stat(src).catch(ignoreNotFound)
                   : undefined;
               if (options.fallback.stream?.contentLength) {
                 if (srcStat && typeof srcStat.size === 'number') {
@@ -546,7 +674,13 @@ export class BreadFS<P extends BreadFSProvider<string> = BreadFSProvider<string>
                 } else if (srcStat && typeof srcStat.size === 'bigint') {
                   writeOptions.contentLength = Number(srcStat.size);
                 } else {
-                  throw new Error(`Can not get file size of ${src}`);
+                  throw new BreadFSError(`Can not get file size of ${src}`, {
+                    code: 'ERR_BREADFS_UNKNOWN',
+                    operation: 'move',
+                    path: src,
+                    dest: typeof dst === 'string' ? dst : dst.path,
+                    source: { provider: 'core' }
+                  });
                 }
               }
               const write =
@@ -595,10 +729,16 @@ export class BreadFS<P extends BreadFSProvider<string> = BreadFSProvider<string>
             await moveFile(src, dst);
           } else if (srcStat.isDirectory()) {
             const moveDirectory = async (src: string, dst: Path) => {
-              const dstStat = await this.stat(dst).catch(() => undefined);
+              const dstStat = await this.stat(dst).catch(ignoreNotFound);
               if (dstStat) {
                 if (!dstStat.isDirectory()) {
-                  throw new Error(`Can not move directory to file ${dst}`);
+                  throw new BreadFSError(`Can not move directory to file ${dst}`, {
+                    code: 'ENOTDIR',
+                    operation: 'move',
+                    path: src,
+                    dest: typeof dst === 'string' ? dst : dst.path,
+                    source: { provider: 'core' }
+                  });
                 }
               } else {
                 await this.mkdir(dst);
@@ -612,7 +752,13 @@ export class BreadFS<P extends BreadFSProvider<string> = BreadFSProvider<string>
                   } else if (file.isFile()) {
                     await moveFile(file.path.path, dst.join(name));
                   } else {
-                    throw new Error('Not support move other file types');
+                    throw new BreadFSError('Not support move other file types', {
+                      code: 'ENOTSUP',
+                      operation: 'move',
+                      path: src,
+                      dest: typeof dst === 'string' ? dst : dst.path,
+                      source: { provider: 'core' }
+                    });
                   }
                 })
               );
@@ -621,16 +767,22 @@ export class BreadFS<P extends BreadFSProvider<string> = BreadFSProvider<string>
 
             await moveDirectory(src, typeof dst === 'string' ? new Path(this, dst) : dst);
           } else {
-            throw new Error('Not support move other file types');
+            throw new BreadFSError('Not support move other file types', {
+              code: 'ENOTSUP',
+              operation: 'move',
+              path: src,
+              dest: typeof dst === 'string' ? dst : dst.path,
+              source: { provider: 'core' }
+            });
           }
         },
-        (src) => src.fs.copy(src, dst)
+        (src) => src.fs.copy(src, dst, options)
       )
     );
   }
 
   public moveSync(src: string | Path, dst: string | Path, options: MoveOptions = {}): void {
-    this.runSync(() =>
+    this.runSync('moveSync', src, dst, () =>
       this.matchFS(
         src,
         (src) => {
@@ -641,19 +793,32 @@ export class BreadFS<P extends BreadFSProvider<string> = BreadFSProvider<string>
           }
 
           if (!options.overwrite && this.existsSync(dst)) {
-            throw new Error(`${dst} is existed`);
+            throw new BreadFSError(`${dst} is existed`, {
+              code: 'EEXIST',
+              operation: 'moveSync',
+              path: src,
+              dest: typeof dst === 'string' ? dst : dst.path,
+              source: { provider: 'core' }
+            });
           }
 
           const moveFile = (src: string, dst: string | Path) => {
             let dstStat: FileStat<P> | undefined;
             try {
               dstStat = this.statSync(dst) as FileStat<P>;
-            } catch {
+            } catch (error) {
+              ignoreNotFound(error);
               dstStat = undefined;
             }
 
             if (dstStat && !dstStat.isFile()) {
-              throw new Error(`Can not move file to directory ${dst}`);
+              throw new BreadFSError(`Can not move file to directory ${dst}`, {
+                code: 'EISDIR',
+                operation: 'moveSync',
+                path: src,
+                dest: typeof dst === 'string' ? dst : dst.path,
+                source: { provider: 'core' }
+              });
             }
 
             const contents = this.readFileSync(src, options.fallback?.file?.read);
@@ -669,16 +834,25 @@ export class BreadFS<P extends BreadFSProvider<string> = BreadFSProvider<string>
               let dstStat: FileStat<P> | undefined;
               try {
                 dstStat = this.statSync(dst) as FileStat<P>;
-              } catch {
+              } catch (error) {
+                ignoreNotFound(error);
                 dstStat = undefined;
               }
+
               if (dstStat) {
                 if (!dstStat.isDirectory()) {
-                  throw new Error(`Can not move directory to file ${dst}`);
+                  throw new BreadFSError(`Can not move directory to file ${dst}`, {
+                    code: 'ENOTDIR',
+                    operation: 'moveSync',
+                    path: src,
+                    dest: typeof dst === 'string' ? dst : dst.path,
+                    source: { provider: 'core' }
+                  });
                 }
               } else {
                 this.mkdirSync(dst);
               }
+
               const files = this.listStatSync(src);
               for (const file of files) {
                 const name = file.path.basename;
@@ -687,7 +861,13 @@ export class BreadFS<P extends BreadFSProvider<string> = BreadFSProvider<string>
                 } else if (file.isFile()) {
                   moveFile(file.path.path, dst.join(name));
                 } else {
-                  throw new Error('Not support move other file types');
+                  throw new BreadFSError('Not support move other file types', {
+                    code: 'ENOTSUP',
+                    operation: 'moveSync',
+                    path: src,
+                    dest: typeof dst === 'string' ? dst : dst.path,
+                    source: { provider: 'core' }
+                  });
                 }
               }
               this.removeSync(src, options.fallback?.file?.remove);
@@ -695,16 +875,22 @@ export class BreadFS<P extends BreadFSProvider<string> = BreadFSProvider<string>
 
             moveDirectory(src, typeof dst === 'string' ? new Path(this, dst) : dst);
           } else {
-            throw new Error('Not support move other file types');
+            throw new BreadFSError('Not support move other file types', {
+              code: 'ENOTSUP',
+              operation: 'moveSync',
+              path: src,
+              dest: typeof dst === 'string' ? dst : dst.path,
+              source: { provider: 'core' }
+            });
           }
         },
-        (src) => src.fs.moveSync(src, dst)
+        (src) => src.fs.moveSync(src, dst, options)
       )
     );
   }
 
   public async exists(path: string | Path): Promise<boolean> {
-    return this.runAsync(() =>
+    return this.runAsync('exists', path, undefined, () =>
       this.matchFS(
         path,
         (p) => this.provider.exists(p),
@@ -714,7 +900,7 @@ export class BreadFS<P extends BreadFSProvider<string> = BreadFSProvider<string>
   }
 
   public existsSync(path: string | Path): boolean {
-    return this.runSync(() =>
+    return this.runSync('existsSync', path, undefined, () =>
       this.matchFS(
         path,
         (p) => {
@@ -725,11 +911,18 @@ export class BreadFS<P extends BreadFSProvider<string> = BreadFSProvider<string>
             try {
               this.provider.statSync(p, {});
               return true;
-            } catch {
+            } catch (error) {
+              ignoreNotFound(error);
               return false;
             }
           }
-          throw new Error('existsSync is not supported');
+          throw new BreadFSError('existsSync is not supported', {
+            code: 'ENOTSUP',
+            operation: 'existsSync',
+            path: typeof path === 'string' ? path : path.path,
+
+            source: { provider: 'core' }
+          });
         },
         (p) => p.fs.existsSync(p)
       )
@@ -740,7 +933,7 @@ export class BreadFS<P extends BreadFSProvider<string> = BreadFSProvider<string>
     path: T,
     options: StatOptions = {}
   ): Promise<AcrossFileStat<T, P>> {
-    return this.runAsync(() =>
+    return this.runAsync('stat', path, undefined, () =>
       this.matchFS(
         path,
         async (p) => {
@@ -761,12 +954,18 @@ export class BreadFS<P extends BreadFSProvider<string> = BreadFSProvider<string>
     path: T,
     options: StatOptions = {}
   ): AcrossFileStat<T, P> {
-    return this.runSync(() =>
+    return this.runSync('statSync', path, undefined, () =>
       this.matchFS(
         path,
         (p) => {
           if (!this.provider.statSync) {
-            throw new Error('statSync is not supported');
+            throw new BreadFSError('statSync is not supported', {
+              code: 'ENOTSUP',
+              operation: 'statSync',
+              path: typeof path === 'string' ? path : path.path,
+
+              source: { provider: 'core' }
+            });
           }
           const stat = this.provider.statSync(p, options) as unknown as AcrossFileStat<T, P>;
           stat.path = typeof path === 'string' ? new Path(this, p) : path;
@@ -785,7 +984,7 @@ export class BreadFS<P extends BreadFSProvider<string> = BreadFSProvider<string>
     path: T,
     options: ListOptions = {}
   ): Promise<AcrossPath<T, P>[]> {
-    return this.runAsync(() =>
+    return this.runAsync('list', path, undefined, () =>
       this.matchFS(
         path,
         async (root) => {
@@ -798,13 +997,20 @@ export class BreadFS<P extends BreadFSProvider<string> = BreadFSProvider<string>
   }
 
   public listSync<T extends string | Path>(path: T, options: ListOptions = {}): AcrossPath<T, P>[] {
-    return this.runSync(() =>
+    return this.runSync('listSync', path, undefined, () =>
       this.matchFS(
         path,
         (root) => {
           if (!this.provider.listSync) {
-            throw new Error('listSync is not supported');
+            throw new BreadFSError('listSync is not supported', {
+              code: 'ENOTSUP',
+              operation: 'listSync',
+              path: typeof path === 'string' ? path : path.path,
+
+              source: { provider: 'core' }
+            });
           }
+
           const files = this.provider.listSync(root, options);
           return files.map((sp) => this.path(sp) as AcrossPath<T, P>);
         },
@@ -817,7 +1023,7 @@ export class BreadFS<P extends BreadFSProvider<string> = BreadFSProvider<string>
     path: T,
     options: ListOptions = {}
   ): Promise<AcrossFileStat<T, P>[]> {
-    return this.runAsync(() =>
+    return this.runAsync('listStat', path, undefined, () =>
       this.matchFS(
         path,
         async (root) => {
@@ -844,7 +1050,7 @@ export class BreadFS<P extends BreadFSProvider<string> = BreadFSProvider<string>
     path: T,
     options: ListOptions = {}
   ): AcrossFileStat<T, P>[] {
-    return this.runSync(() =>
+    return this.runSync('listStatSync', path, undefined, () =>
       this.matchFS(
         path,
         (root) => {
@@ -879,19 +1085,49 @@ export class BreadFS<P extends BreadFSProvider<string> = BreadFSProvider<string>
     }
   }
 
-  private runSync<T>(fn: () => T): T {
+  private runSync<T>(
+    operation: string,
+    path: string | Path,
+    dest: string | Path | undefined,
+    fn: () => T
+  ): T {
     try {
       return fn();
     } catch (error) {
-      throw new BreadFSError(error);
+      if (error instanceof BreadFSError) {
+        throw error;
+      }
+
+      throw new BreadFSError(error, {
+        operation,
+        path: typeof path === 'string' ? path : path.path,
+        dest: typeof dest === 'string' ? dest : dest?.path,
+        code: 'ERR_BREADFS_UNKNOWN',
+        source: { provider: 'core' }
+      });
     }
   }
 
-  private async runAsync<T>(fn: () => Promise<T>): Promise<T> {
+  private async runAsync<T>(
+    operation: string,
+    path: string | Path,
+    dest: string | Path | undefined,
+    fn: () => Promise<T>
+  ): Promise<T> {
     try {
       return await fn();
     } catch (error) {
-      throw new BreadFSError(error);
+      if (error instanceof BreadFSError) {
+        throw error;
+      }
+
+      throw new BreadFSError(error, {
+        operation,
+        path: typeof path === 'string' ? path : path.path,
+        dest: typeof dest === 'string' ? dest : dest?.path,
+        code: 'ERR_BREADFS_UNKNOWN',
+        source: { provider: 'core' }
+      });
     }
   }
   // ---

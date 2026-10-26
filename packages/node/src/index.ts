@@ -30,8 +30,12 @@ import type {
   WriteFileOptions,
   RawFileStat
 } from '@breadfs/core';
+import { wrapReadable, wrapWritable } from '@breadfs/internal';
 
 import { Path } from '@breadfs/core';
+
+import { ignoreNotFound } from './utils';
+import { normalizeNodeError } from './error';
 
 // @ts-ignore
 Path.prototype[inspect.custom] = function () {
@@ -42,43 +46,79 @@ export class NodeProvider implements BreadFSProvider<'node'> {
   public readonly name = 'node';
 
   public createReadStream(path: string, options: ReadStreamOptions) {
-    const stream = createReadStream(path, options);
-    return Readable.toWeb(stream) as ReadableStream<Uint8Array>;
+    try {
+      const stream = createReadStream(path, options);
+      return wrapReadable(Readable.toWeb(stream) as ReadableStream<Uint8Array>, (error) =>
+        normalizeNodeError(error, { operation: 'createReadStream', path })
+      );
+    } catch (error) {
+      throw normalizeNodeError(error, { operation: 'createReadStream', path });
+    }
   }
 
   public createWriteStream(path: string, options: WriteStreamOptions) {
-    const stream = createWriteStream(path, options);
-    return Writable.toWeb(stream) as WritableStream<Uint8Array>;
+    try {
+      const stream = createWriteStream(path, options);
+      return wrapWritable(Writable.toWeb(stream) as WritableStream<Uint8Array>, (error) =>
+        normalizeNodeError(error, { operation: 'createWriteStream', path })
+      );
+    } catch (error) {
+      throw normalizeNodeError(error, { operation: 'createWriteStream', path });
+    }
   }
 
   public async mkdir(path: string, options: MakeDirectoryOptions): Promise<void> {
-    await fs.mkdir(path, options);
+    try {
+      await fs.mkdir(path, options);
+    } catch (error) {
+      throw normalizeNodeError(error, { operation: 'mkdir', path });
+    }
   }
 
   public mkdirSync(path: string, options: MakeDirectoryOptions): void {
-    mkdirSync(path, options);
+    try {
+      mkdirSync(path, options);
+    } catch (error) {
+      throw normalizeNodeError(error, { operation: 'mkdirSync', path });
+    }
   }
 
   public async readFile(path: string, options: ReadFileOptions): Promise<Uint8Array> {
-    return await fs.readFile(path, {});
+    try {
+      return await fs.readFile(path, {});
+    } catch (error) {
+      throw normalizeNodeError(error, { operation: 'readFile', path });
+    }
   }
 
   public readFileSync(path: string, _options: ReadFileOptions): Uint8Array {
-    return readFileSync(path) as Uint8Array;
+    try {
+      return readFileSync(path) as Uint8Array;
+    } catch (error) {
+      throw normalizeNodeError(error, { operation: 'readFileSync', path });
+    }
   }
 
   public async readText(path: string, options: EncodingOptions): Promise<string> {
-    const res = await fs.readFile(path, options);
-    if (typeof res === 'string') {
-      return res;
-    } else {
-      return res.toString();
+    try {
+      const res = await fs.readFile(path, options);
+      if (typeof res === 'string') {
+        return res;
+      } else {
+        return res.toString();
+      }
+    } catch (error) {
+      throw normalizeNodeError(error, { operation: 'readText', path });
     }
   }
 
   public readTextSync(path: string, options: EncodingOptions): string {
-    const res = readFileSync(path, options);
-    return typeof res === 'string' ? res : res.toString();
+    try {
+      const res = readFileSync(path, options);
+      return typeof res === 'string' ? res : res.toString();
+    } catch (error) {
+      throw normalizeNodeError(error, { operation: 'readTextSync', path });
+    }
   }
 
   public async writeFile(
@@ -86,78 +126,143 @@ export class NodeProvider implements BreadFSProvider<'node'> {
     stream: Buffer | Uint8Array,
     options: WriteFileOptions
   ): Promise<void> {
-    await fs.writeFile(path, stream, { encoding: options.encoding });
+    try {
+      await fs.writeFile(path, stream, { encoding: options.encoding });
+    } catch (error) {
+      throw normalizeNodeError(error, { operation: 'writeFile', path });
+    }
   }
 
   public writeFileSync(path: string, stream: Buffer | Uint8Array, options: WriteFileOptions): void {
-    writeFileSync(path, stream, { encoding: options.encoding });
+    try {
+      writeFileSync(path, stream, { encoding: options.encoding });
+    } catch (error) {
+      throw normalizeNodeError(error, { operation: 'writeFileSync', path });
+    }
   }
 
   public async writeText(path: string, content: string, options: EncodingOptions): Promise<void> {
-    await fs.writeFile(path, content, options);
+    try {
+      await fs.writeFile(path, content, options);
+    } catch (error) {
+      throw normalizeNodeError(error, { operation: 'writeText', path });
+    }
   }
 
   public writeTextSync(path: string, content: string, options: EncodingOptions): void {
-    writeFileSync(path, content, options);
+    try {
+      writeFileSync(path, content, options);
+    } catch (error) {
+      throw normalizeNodeError(error, { operation: 'writeTextSync', path });
+    }
   }
 
   public async remove(path: string, options: RemoveOptions): Promise<void> {
-    await fse.rm(path, options);
+    try {
+      await fse.rm(path, options);
+    } catch (error) {
+      throw normalizeNodeError(error, { operation: 'remove', path });
+    }
   }
 
   public removeSync(path: string, options: RemoveOptions): void {
-    fse.rmSync(path, options as any);
+    try {
+      fse.rmSync(path, options as any);
+    } catch (error) {
+      throw normalizeNodeError(error, { operation: 'removeSync', path });
+    }
   }
 
   public async copy(src: string, dst: string, options: CopyOptions): Promise<void> {
-    await fse.copy(src, dst, options);
+    try {
+      await fse.copy(src, dst, options);
+    } catch (error) {
+      throw normalizeNodeError(error, {
+        operation: 'copy',
+        path: src,
+        dest: dst
+      });
+    }
   }
 
   public copySync(src: string, dst: string, options: CopyOptions): void {
-    fse.copySync(src, dst, options as any);
+    try {
+      fse.copySync(src, dst, options as any);
+    } catch (error) {
+      throw normalizeNodeError(error, {
+        operation: 'copySync',
+        path: src,
+        dest: dst
+      });
+    }
   }
 
   public async move(src: string, dst: string, options: MoveOptions): Promise<void> {
-    await fse.move(src, dst, options);
+    try {
+      await fse.move(src, dst, options);
+    } catch (error) {
+      throw normalizeNodeError(error, {
+        operation: 'move',
+        path: src,
+        dest: dst
+      });
+    }
   }
 
   public moveSync(src: string, dst: string, options: MoveOptions): void {
-    fse.moveSync(src, dst, options as any);
+    try {
+      fse.moveSync(src, dst, options as any);
+    } catch (error) {
+      throw normalizeNodeError(error, {
+        operation: 'moveSync',
+        path: src,
+        dest: dst
+      });
+    }
   }
 
   public async stat(path: string, options: StatOptions): Promise<RawFileStat> {
-    const stat = await fs.stat(path, options);
+    try {
+      const stat = await fs.stat(path, options);
 
-    return {
-      path,
-      size: stat.size,
-      isFile: () => stat.isFile(),
-      isDirectory: () => stat.isDirectory(),
-      isSymbolicLink: () => stat.isSymbolicLink(),
-      mtime: stat.mtime,
-      birthtime: stat.birthtime
-    };
+      return {
+        path,
+        size: stat.size,
+        isFile: () => stat.isFile(),
+        isDirectory: () => stat.isDirectory(),
+        isSymbolicLink: () => stat.isSymbolicLink(),
+        mtime: stat.mtime,
+        birthtime: stat.birthtime
+      };
+    } catch (error) {
+      throw normalizeNodeError(error, { operation: 'stat', path });
+    }
   }
 
   public statSync(path: string, options: StatOptions): RawFileStat {
-    const stat = statSync(path, options as any);
+    try {
+      const stat = statSync(path, options as any);
 
-    return {
-      path,
-      size: stat.size,
-      isFile: () => stat.isFile(),
-      isDirectory: () => stat.isDirectory(),
-      isSymbolicLink: () => stat.isSymbolicLink(),
-      mtime: stat.mtime,
-      birthtime: stat.birthtime
-    };
+      return {
+        path,
+        size: stat.size,
+        isFile: () => stat.isFile(),
+        isDirectory: () => stat.isDirectory(),
+        isSymbolicLink: () => stat.isSymbolicLink(),
+        mtime: stat.mtime,
+        birthtime: stat.birthtime
+      };
+    } catch (error) {
+      throw normalizeNodeError(error, { operation: 'statSync', path });
+    }
   }
 
   public async exists(path: string): Promise<boolean> {
     try {
       await fs.access(path);
       return true;
-    } catch {
+    } catch (error) {
+      ignoreNotFound(normalizeNodeError(error, { operation: 'exists', path }));
       return false;
     }
   }
@@ -166,49 +271,70 @@ export class NodeProvider implements BreadFSProvider<'node'> {
     try {
       accessSync(path);
       return true;
-    } catch {
+    } catch (error) {
+      ignoreNotFound(
+        normalizeNodeError(error, { operation: 'existsSync', path })
+      );
       return false;
     }
   }
 
   public async list(path: string, options: ListOptions): Promise<string[]> {
-    return (await fs.readdir(path, options)).map((p) => pathe.join(path, p));
+    try {
+      return (await fs.readdir(path, options)).map((p) => pathe.join(path, p));
+    } catch (error) {
+      throw normalizeNodeError(error, { operation: 'list', path });
+    }
   }
 
   public listSync(path: string, options: ListOptions): string[] {
-    return readdirSync(path, options).map((p) => pathe.join(path, String(p)));
+    try {
+      return readdirSync(path, options).map((p) => pathe.join(path, String(p)));
+    } catch (error) {
+      throw normalizeNodeError(error, { operation: 'listSync', path });
+    }
   }
 
   public async listStat(path: string, options: ListOptions): Promise<RawFileStat[]> {
-    const dirs = await fs.readdir(path, { ...options, withFileTypes: true });
+    try {
+      const dirs = await fs.readdir(path, { ...options, withFileTypes: true });
 
-    return dirs.map((stat) => ({
-      path: pathe.join(stat.parentPath, stat.name),
-      size: undefined,
-      isFile: () => stat.isFile(),
-      isDirectory: () => stat.isDirectory(),
-      isSymbolicLink: () => stat.isSymbolicLink(),
-      mtime: undefined,
-      birthtime: undefined
-    }));
-  }
-
-  public listStatSync(path: string, options: ListOptions): RawFileStat[] {
-    const dirs = readdirSync(path, { ...options, withFileTypes: true });
-
-    return dirs.map((stat) => {
-      const parent = (stat as any).parentPath ?? (stat as any).path ?? path;
-      return {
-        path: pathe.join(parent, stat.name),
+      return dirs.map((stat) => ({
+        path: pathe.join(stat.parentPath, stat.name),
         size: undefined,
         isFile: () => stat.isFile(),
         isDirectory: () => stat.isDirectory(),
         isSymbolicLink: () => stat.isSymbolicLink(),
         mtime: undefined,
         birthtime: undefined
-      };
-    });
+      }));
+    } catch (error) {
+      throw normalizeNodeError(error, { operation: 'listStat', path });
+    }
+  }
+
+  public listStatSync(path: string, options: ListOptions): RawFileStat[] {
+    try {
+      const dirs = readdirSync(path, { ...options, withFileTypes: true });
+
+      return dirs.map((stat) => {
+        const parent = (stat as any).parentPath ?? (stat as any).path ?? path;
+        return {
+          path: pathe.join(parent, stat.name),
+          size: undefined,
+          isFile: () => stat.isFile(),
+          isDirectory: () => stat.isDirectory(),
+          isSymbolicLink: () => stat.isSymbolicLink(),
+          mtime: undefined,
+          birthtime: undefined
+        };
+      });
+    } catch (error) {
+      throw normalizeNodeError(error, { operation: 'listStatSync', path });
+    }
   }
 }
 
 export const NodeFS = new NodeProvider();
+
+export type { NodeErrorSource } from './error';

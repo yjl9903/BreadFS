@@ -47,6 +47,7 @@
     "pathe": "^2.0.3"
   },
   "devDependencies": {
+    "@breadfs/internal": "workspace:*",
     "@types/fs-extra": "^11.0.4"
   },
   "engines": {

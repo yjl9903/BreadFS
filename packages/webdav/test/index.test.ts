@@ -403,7 +403,7 @@ describe('webdav', () => {
     await file.remove();
 
     await expect(file.remove({ force: false })).rejects.toThrowErrorMatchingInlineSnapshot(
-      `[Error: Invalid response: 404 Not Found]`
+      `[BreadFSError: Invalid response: 404 Not Found]`
     );
   });
 });

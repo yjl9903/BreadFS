@@ -46,6 +46,9 @@
     "memfs": "^4.79.0",
     "pathe": "^2.0.3"
   },
+  "devDependencies": {
+    "@breadfs/internal": "workspace:*"
+  },
   "engines": {
     "node": ">=v24.0.0"
   }

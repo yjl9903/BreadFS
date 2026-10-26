@@ -1,0 +1,10 @@
+{
+  "name": "@breadfs/internal",
+  "version": "0.1.13",
+  "private": true,
+  "sideEffects": false,
+  "type": "module",
+  "exports": {
+    ".": "./src/streams.ts"
+  }
+}

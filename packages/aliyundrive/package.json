@@ -45,6 +45,7 @@
     "@breadfs/core": "workspace:*"
   },
   "devDependencies": {
+    "@breadfs/internal": "workspace:*",
     "@breadfs/node": "workspace:*"
   },
   "engines": {
