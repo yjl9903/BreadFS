@@ -16,7 +16,7 @@
     "@types/node": "^24.19.2",
     "breadc": "^1.0.0-beta.23",
     "bumpp": "latest",
-    "dotenv": "^18.0.7",
+    "dotenv": "^18.0.9",
     "tsdown": "^0.23.2",
     "turbo": "^2.11.10",
     "typescript": "^6.0.3",
