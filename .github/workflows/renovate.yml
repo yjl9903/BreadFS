@@ -110,8 +110,8 @@ jobs:
               rebase_with_main_winning
             fi
 
-            # CI defaults to a frozen lockfile, so explicitly allow regeneration.
-            pnpm install --no-frozen-lockfile
+            # Rebase conflict resolution can leave missing dependency entries.
+            pnpm install --no-frozen-lockfile --fix-lockfile
 
             if ! git diff --quiet -- . ':(exclude)pnpm-lock.yaml'; then
               echo "::error::pnpm install changed files other than pnpm-lock.yaml."
