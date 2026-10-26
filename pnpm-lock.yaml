@@ -176,7 +176,7 @@ importers:
         specifier: latest
         version: 12.3.0
       dotenv:
-        specifier: ^18.0.7
+        specifier: ^18.0.9
         version: 18.0.9
       tsdown:
         specifier: ^0.23.2
